@@ -1,0 +1,31 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMService", "FMService\FMService.csproj", "{D4586D79-6A70-4E8A-AF4E-ACA77C46A9C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMSpiderApp", "FMSpiderApp\FMSpiderApp.csproj", "{2D39287E-8B74-4FA9-B7EF-171A733079AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMUtil", "FMUtil\FMUtil.csproj", "{687F7EB2-53C2-4B58-9C04-134EBB3FC8CD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4586D79-6A70-4E8A-AF4E-ACA77C46A9C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4586D79-6A70-4E8A-AF4E-ACA77C46A9C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4586D79-6A70-4E8A-AF4E-ACA77C46A9C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4586D79-6A70-4E8A-AF4E-ACA77C46A9C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D39287E-8B74-4FA9-B7EF-171A733079AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D39287E-8B74-4FA9-B7EF-171A733079AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D39287E-8B74-4FA9-B7EF-171A733079AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D39287E-8B74-4FA9-B7EF-171A733079AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{687F7EB2-53C2-4B58-9C04-134EBB3FC8CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{687F7EB2-53C2-4B58-9C04-134EBB3FC8CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{687F7EB2-53C2-4B58-9C04-134EBB3FC8CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{687F7EB2-53C2-4B58-9C04-134EBB3FC8CD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
