@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crawler", "Crawler.csproj", "{2A54D63B-5385-435D-9F91-6517E567F093}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{2A54D63B-5385-435D-9F91-6517E567F093}.Debug.ActiveCfg = Debug|.NET
+		{2A54D63B-5385-435D-9F91-6517E567F093}.Debug.Build.0 = Debug|.NET
+		{2A54D63B-5385-435D-9F91-6517E567F093}.Release.ActiveCfg = Release|.NET
+		{2A54D63B-5385-435D-9F91-6517E567F093}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
