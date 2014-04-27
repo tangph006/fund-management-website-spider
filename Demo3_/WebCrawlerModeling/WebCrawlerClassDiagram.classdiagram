@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<logicalClassDesignerModel xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm4="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/ModelStore" dslVersion="1.0.0.0" Id="b07d3717-e2ca-410c-ba03-a38665274d58" name="WebCrawlerClassDiagram" linkedPackageId="d122f676-5a47-4fa1-a342-631e30d113a6" xmlns="http://schemas.microsoft.com/dsltools/LogicalClassDesigner">
+  <profileInstances>
+    <packageHasProfileInstances Id="cbe9a80f-e28a-40bb-b18d-ddc3eb1c2e3a">
+      <profileInstance Id="26888d46-06dd-4d1a-89d4-067af5e7ef21" name="StandardProfileL2">
+        <elementDefinition Id="e34d544e-0fea-4ed6-ac5e-1b74119ac791" />
+      </profileInstance>
+      <elementDefinition Id="0caec977-1f8c-4ba3-a7db-8cc9ad9cc73b" />
+    </packageHasProfileInstances>
+    <packageHasProfileInstances Id="585e796d-8ab2-4601-b205-ec858960b72a">
+      <profileInstance Id="2d4ff682-d6b8-4944-9ee5-79a37dfbe0e7" name="StandardProfileL3">
+        <elementDefinition Id="532ea607-fb19-44b8-8502-3351b05452be" />
+      </profileInstance>
+      <elementDefinition Id="29349502-908c-4fda-9054-c48619c59ed0" />
+    </packageHasProfileInstances>
+  </profileInstances>
+  <packagedElements>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="57c79cdf-55c5-4499-81b6-4bb540981549" name="OneUrlObj" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="71fc3cf5-7837-49a1-84d1-35bc60cf030c" />
+        <ownedAttributesInternal>
+          <property Id="bbc161b8-9864-45c6-a2ee-0045572132cf" name="urlString_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="88804824-b7c7-40e3-b398-ea0b6b9c216d" />
+          </property>
+          <property Id="6b597924-9134-4299-a709-6d8c075e973a" name="state_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="3a549776-205c-4fa1-a7ac-58180b5d64ec" />
+          </property>
+          <property Id="3adfb980-3e4c-499a-b8ea-4aad5c1612a4" name="domainName_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="8c7da894-2c95-45bc-86a0-a53c3fd4d778" />
+          </property>
+          <property Id="ea1b7d9b-7e9d-4b1f-9b09-f744a5afbc6d" name="localPathName_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="722950c7-774c-44f5-914f-d3b0eef376da" />
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="d843fbc8-01ed-4895-9e55-5c948bc2e2b7" name="AllUrlsInOnePage" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="045a09df-af6b-40c5-945a-1d3bfd933822" />
+        <ownedAttributesInternal>
+          <property Id="b04fc790-e64a-4c13-884e-f06839891770" name="urlsInOnePage_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="f3e2a100-8522-4471-8045-3b2a508a951d" />
+          </property>
+          <property Id="87a8f767-739b-4447-affc-919aa268fca8" name="theNextIndex" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="e5837d8d-cee0-445d-b14b-11667c9febfe" />
+          </property>
+          <property Id="bd39fc7e-78c6-4867-8746-32b66f350df5" name="successCount_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="ab9e4764-9773-4fb6-abf0-b7e08779a8ee" />
+          </property>
+          <property Id="ff46084e-aa17-48e7-a076-f04df5689351" name="failCount_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="f38e1315-b23b-4f1a-b722-8230639aec6e" />
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="4dfd86b1-6308-42f2-81d5-f8e344b01568" name="AllUrls" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="2b8a1dc0-0847-48e0-848d-3125002e329a" />
+        <ownedAttributesInternal>
+          <property Id="5296a2bc-ecd6-4f4f-b9db-527adb14e4ea" name="allUrls_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="ee54d508-234d-4828-bccc-43cb19010e48" />
+          </property>
+          <property Id="7eb9e5fc-34b5-4348-b9e4-0f0dd0c7d007" name="depth_" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="96384549-7c99-492c-b81f-60a282de00f2" />
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+  </packagedElements>
+  <package Id="d122f676-5a47-4fa1-a342-631e30d113a6" name="WebCrawlerModeling">
+    <elementDefinition Id="ae055aba-ad49-4569-baf2-baf506ca3114" />
+  </package>
+</logicalClassDesignerModel>
