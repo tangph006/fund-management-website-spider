@@ -149,7 +149,7 @@ namespace Crawler
 							threadsRun[nIndex].Name = nIndex.ToString();
 							// start thread working function
 							threadsRun[nIndex].Start();
-							// check if thread dosn't added to the view
+							// check if thread doesn't added to the view
 							if(nIndex == this.listViewThreads.Items.Count)
 							{
 								// add a new line in the view for the new thread
@@ -384,8 +384,8 @@ namespace Crawler
 
 			this.cpuCounter.CategoryName = "Processor"; 
 			this.cpuCounter.CounterName = "% Processor Time"; 
-			this.cpuCounter.InstanceName = "_Total"; 
-
+			this.cpuCounter.InstanceName = "_Total";
+            Control.CheckForIllegalCrossThreadCalls = false;
 		}
 
 		/// <summary>
@@ -1183,9 +1183,9 @@ namespace Crawler
 			try
 			{
 				int nState = 0;
-				// check internet connection state
+				// check Internet connection state
 				if(InternetGetConnectedState(ref nState, 0) == 0)
-					return "You are currently not connected to the internet";
+					return "You are currently not connected to the Internet";
 				if((nState & 1) == 1)
 					strState = "Modem connection";
 				else	if((nState & 2) == 2)
@@ -1220,11 +1220,11 @@ namespace Crawler
 					if(nFirstTimeCheckConnection++ == 0)
 						// ask for dial up or DSL connection
 						if(InternetAutodial(1, 0) != 0)
-							// check internet connection state again
+							// check Internet connection state again
 							InternetGetConnectedState(ref nState, 0);
 				}
 				if((nState & 2) == 2 || (nState & 4) == 4)
-					// reset to reask for connection agina
+                    // reset to re ask for connection again
 					nFirstTimeCheckConnection = 0;
 			}
 			catch
@@ -1353,7 +1353,7 @@ namespace Crawler
 			if(threadParse.ThreadState == ThreadState.Suspended)
 				threadParse.Resume();
 
-			// update runnning threads
+			// update running threads
 			ThreadCount = Settings.GetValue("Threads count", 10);
 
 			this.toolBarButtonContinue.Enabled = false;
@@ -2099,15 +2099,22 @@ namespace Crawler
 	}
 
 	public class MyUri : System.Uri
-	{
+    {
+        public int Depth;
 		public MyUri(string uriString):base(uriString)
 		{
 		}
-		public int Depth;
 	}
 
 	public class MyWebRequest
-	{
+    {
+        public int Timeout;
+        public WebHeaderCollection Headers;
+        public string Header;
+        public Uri RequestUri;
+        public string Method;
+        public MyWebResponse response;
+        public bool KeepAlive;
 		public MyWebRequest(Uri uri, bool bKeepAlive)
 		{
 			Headers = new WebHeaderCollection();
@@ -2144,17 +2151,16 @@ namespace Crawler
 			response.ReceiveHeader();
 			return response;
 		}
-
-		public int Timeout;
-		public WebHeaderCollection Headers;
-		public string Header;
-		public Uri RequestUri;
-		public string Method;
-		public MyWebResponse response;
-		public bool KeepAlive;
 	}
 	public class MyWebResponse
-	{
+    {
+        public Uri ResponseUri;
+        public string ContentType;
+        public int ContentLength;
+        public WebHeaderCollection Headers;
+        public string Header;
+        public Socket socket;
+        public bool KeepAlive;
 		public MyWebResponse()
 		{
 		}
@@ -2217,12 +2223,5 @@ namespace Crawler
 		{
 			socket.Close();
 		}
-		public Uri ResponseUri;
-		public string ContentType;
-		public int ContentLength;
-		public WebHeaderCollection Headers; 
-		public string Header;
-		public Socket socket;
-		public bool KeepAlive;
 	}
 }
