@@ -1,6 +1,3 @@
-// inventor name: Hatem Mostafa
-// Date: 19/3/2006
-
 using System;
 using System.Drawing;
 using System.Xml;
@@ -14,11 +11,9 @@ using System.Data;
 using System.Resources;
 using System.Threading;
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
 using System.Net;
 using System.Net.Sockets;
 using LiteLib;
-
 
 namespace Crawler
 {
@@ -27,266 +22,15 @@ namespace Crawler
 	/// </summary>
 	public class CrawlerForm : System.Windows.Forms.Form
 	{
-		// unique Uri's queue
-		private Queue queueURLS;
-		// thread that take the browse editor text to parse it
-		private Thread threadParse;
-		// binary tree to keep unique Uri's
-		private SortTree urlStorage;
-		// Performance Counter to measure CPU usage
-		private System.Diagnostics.PerformanceCounter cpuCounter; 
-		// Performance Counter to measure memory usage
-		private System.Diagnostics.PerformanceCounter ramCounter; 
-		
-		// number of bytes downloaded
-		private int nByteCount;
-		private int ByteCount
-		{
-			get	{	return nByteCount;	}
-			set
-			{
-				nByteCount = value;
-				this.statusBarPanelByteCount.Text = Commas(nByteCount/1024+1)+ " KB";
-			}
-		}
+        // user settings
+        public SettingT settingT;
+        // user input
+        public InputT inputT;
+        // output of parse/crawl result
+        public OutputT outputT;
+        // the hard working man
+        public ParserT parserT;
 
-		// number of errors during the download process
-		private int nErrorCount;
-		private int ErrorCount
-		{
-			get	{	return nErrorCount;	}
-			set
-			{
-				nErrorCount = value;
-				this.statusBarPanelErrors.Text = Commas(nErrorCount) + " errors";
-			}
-		}
-
-		// number of Uri's found
-		private int nURLCount;
-		private int URLCount
-		{
-			get	{	return nURLCount;	}
-			set
-			{
-				nURLCount = value;
-				this.statusBarPanelURLs.Text = Commas(nURLCount)+ " URL found";
-			}
-		}
-
-		// available memory
-		private float nFreeMemory;
-		private float FreeMemory
-		{
-			get	{	return nFreeMemory;	}
-			set
-			{
-				nFreeMemory = value;
-				this.statusBarPanelMem.Text = nFreeMemory + " Mb Available";
-			}
-		}
-
-		// CPU usage
-		private int nCPUUsage;
-		private int CPUUsage
-		{
-			get	{	return nCPUUsage;	}
-			set
-			{
-				nCPUUsage = value;
-				this.statusBarPanelCPU.Text = "CPU usage " + nCPUUsage +"%";
-
-				Icon icon = Icon.FromHandle(((Bitmap)imageListPercentage.Images[value/10]).GetHicon());
-				this.statusBarPanelCPU.Icon = icon;
-			}
-		}
-
-		// download folder
-		private string strDownloadfolder;
-		private string Downloadfolder
-		{
-			get	{	return strDownloadfolder;	}
-			set
-			{
-				strDownloadfolder = value;
-				strDownloadfolder = strDownloadfolder.TrimEnd('\\');
-			}
-		}
-		
-		// number of files downloaded
-		private int nFileCount;
-		private int FileCount
-		{
-			get	{	return nFileCount;	}
-			set
-			{
-				nFileCount = value;
-				this.statusBarPanelFiles.Text = Commas(nFileCount)+ " file(s) downloaded";
-			}
-		}
-		
-		// threads array
-		private Thread[] threadsRun;
-
-		// number of running threads
-		private int nThreadCount;
-		private int ThreadCount
-		{
-			get	{	return nThreadCount;	}
-			set
-			{
-				Monitor.Enter(this.listViewThreads);
-				try
-				{
-					for(int nIndex = 0; nIndex < value; nIndex ++)
-					{
-						// check if thread not created or not suspended
-						if(threadsRun[nIndex] == null || threadsRun[nIndex].ThreadState != ThreadState.Suspended)
-						{	
-							// create new thread
-							threadsRun[nIndex] = new Thread(new ThreadStart(ThreadRunFunction));
-							// set thread name equal to its index
-							threadsRun[nIndex].Name = nIndex.ToString();
-							// start thread working function
-							threadsRun[nIndex].Start();
-							// check if thread doesn't added to the view
-							if(nIndex == this.listViewThreads.Items.Count)
-							{
-								// add a new line in the view for the new thread
-								ListViewItem item = this.listViewThreads.Items.Add((nIndex+1).ToString(), 0);
-								string[] subItems = { "", "", "", "0", "0%" };
-								item.SubItems.AddRange(subItems);
-							}
-						}
-						// check if the thread is suspended
-						else	if(threadsRun[nIndex].ThreadState == ThreadState.Suspended)
-						{
-							// get thread item from the list
-							ListViewItem item = this.listViewThreads.Items[nIndex];
-							item.ImageIndex = 1;
-							item.SubItems[2].Text = "Resume";
-							// resume the thread
-							threadsRun[nIndex].Resume();
-						}
-					}
-					// change thread value
-					nThreadCount = value;
-				}
-				catch(Exception)
-				{
-				}
-				Monitor.Exit(this.listViewThreads);
-			}
-		}
-
-		// MIME types string
-		private string strMIMETypes = GetMIMETypes();
-		private string MIMETypes
-		{
-			get	{	return strMIMETypes;	}
-			set	{	strMIMETypes = value;	}
-		}
-
-		// encoding text that includes all settings types in one string
-		private Encoding encoding = GetTextEncoding();
-		private Encoding TextEncoding
-		{
-			get	{	return encoding;	}
-			set	{	encoding = value;	}
-		}
-
-		// timeout of sockets send and receive
-		private int nRequestTimeout;
-		private int RequestTimeout
-		{
-			get	{	return nRequestTimeout;	}
-			set	{	nRequestTimeout = value;	}
-		}
-
-		// the time that each thread sleeps when the refs queue empty
-		private int nSleepFetchTime;
-		private int SleepFetchTime
-		{
-			get	{	return nSleepFetchTime;	}
-			set	{	nSleepFetchTime = value;	}
-		}		
-		
-		// List of a user defined list of restricted words to enable user to prevent any bad pages 
-		private string[] strExcludeWords;
-		private string[] ExcludeWords
-		{
-			get	{	return strExcludeWords;	}
-			set	{	strExcludeWords = value;	}
-		}
-
-		// List of a user defined list of restricted files extensions to avoid paring non-text data 
-		private string[] strExcludeFiles;
-		private string[] ExcludeFiles
-		{
-			get	{	return strExcludeFiles;	}
-			set	{	strExcludeFiles = value;	}
-		}
-
-		// List of a user defined list of restricted hosts extensions to avoid blocking by these hosts
-		private string[] strExcludeHosts;
-		private string[] ExcludeHosts
-		{
-			get	{	return strExcludeHosts;	}
-			set	{	strExcludeHosts = value;	}
-		}
-		
-		// the number of requests to keep in the requests view for review requests details
-		private int nLastRequestCount;
-		private int LastRequestCount
-		{
-			get	{	return nLastRequestCount;	}
-			set	{	nLastRequestCount = value;	}
-		}
-		
-		// the time that each thread sleep after handling any request, 
-		// which is very important value to prevent Hosts from blocking the crawler due to heavy load
-		private int nSleepConnectTime;
-		private int SleepConnectTime
-		{
-			get	{	return nSleepConnectTime;	}
-			set	{	nSleepConnectTime = value;	}
-		}
-
-		// represents the depth of navigation in the crawling process
-		private int nWebDepth;
-		private int WebDepth
-		{
-			get	{	return nWebDepth;	}
-			set	{	nWebDepth = value;	}
-		}
-
-		// MIME types are the types that are supported to be downloaded by the crawler 
-		// and the crawler includes a default types to be used. 
-		private bool bAllMIMETypes;
-		private bool AllMIMETypes
-		{
-			get	{	return bAllMIMETypes;	}
-			set	{	bAllMIMETypes = value;	}
-		}		
-
-		// to limit crawling process to the same host of the original URL
-		private bool bKeepSameServer;
-		private bool KeepSameServer
-		{
-			get	{	return bKeepSameServer;	}
-			set	{	bKeepSameServer = value;	}
-		}		
-		
-		// means keep socket connection opened for subsequent requests to avoid reconnect time
-		private bool bKeepAlive;
-		private bool KeepAlive
-		{
-			get	{	return bKeepAlive;	}
-			set	{	bKeepAlive = value;	}
-		}			
-		
-		// flag to be used to stop all running threads when user request to stop
-		bool ThreadsRunning;
 
 		private System.Windows.Forms.MenuItem menuItemFile;
 		private System.Windows.Forms.MenuItem menuItemExit;
@@ -376,15 +120,7 @@ namespace Crawler
 			//
 			InitializeComponent();
 
-			this.urlStorage = new SortTree();
-			this.threadsRun = new Thread[200];
-			this.queueURLS = new Queue();
-			this.cpuCounter = new System.Diagnostics.PerformanceCounter(); 
-			this.ramCounter = new System.Diagnostics.PerformanceCounter("Memory", "Available MBytes"); 
-
-			this.cpuCounter.CategoryName = "Processor"; 
-			this.cpuCounter.CounterName = "% Processor Time"; 
-			this.cpuCounter.InstanceName = "_Total";
+            this.settingT = new SettingT();
             Control.CheckForIllegalCrossThreadCalls = false;
 		}
 
@@ -1165,9 +901,7 @@ namespace Crawler
 
 		private void CrawlerForm_Load(object sender, System.EventArgs e)
 		{
-			Settings.GetValue(this);
-
-			InitValues();
+			SettingLoader.GetValue(this);
 
 			this.statusBarPanelInfo.Text = InternetGetConnectedStateString();
 		}
@@ -1202,7 +936,7 @@ namespace Crawler
 					return "Internet connection is currently configured";
 					
 				// get current machine IP
-				IPHostEntry he = Dns.Resolve(Dns.GetHostName());
+				IPHostEntry he = Dns.GetHostEntry(Dns.GetHostName());
 				strState += ",  Machine IP: "+he.AddressList[0].ToString();
 			}
 			catch
@@ -1245,92 +979,30 @@ namespace Crawler
 
 		void ShowSettings(int nSelectedIndex)
 		{
-			SettingsForm form = new SettingsForm();
+			SettingForm form = new SettingForm();
 			form.SelectedIndex = nSelectedIndex;
 			if(form.ShowDialog(this) == DialogResult.OK)
 			{
-				ThreadCount = Settings.GetValue("Threads count", 10);
-				InitValues();
+				ThreadCount = SettingLoader.GetValue("Threads count", 10);
+				settingT.InitValues();
 			}
-		}
-
-		void InitValues()
-		{
-			WebDepth = Settings.GetValue("Web depth", 3);
-			RequestTimeout = Settings.GetValue("Request timeout", 20);
-			SleepFetchTime = Settings.GetValue("Sleep fetch time", 2);
-			SleepConnectTime = Settings.GetValue("Sleep connect time", 1);
-			KeepSameServer = Settings.GetValue("Keep same URL server", false);
-			AllMIMETypes = Settings.GetValue("Allow all MIME types", true);
-			KeepAlive = Settings.GetValue("Keep connection alive", true);
-			ExcludeHosts = Settings.GetValue("Exclude Hosts", ".org; .gov;").Replace("*", "").ToLower().Split(';');
-			ExcludeWords = Settings.GetValue("Exclude words", "").Split(';');
-			ExcludeFiles = Settings.GetValue("Exclude files", "").Replace("*", "").ToLower().Split(';');
-			LastRequestCount = Settings.GetValue("View last requests count", 20);
-			Downloadfolder = Settings.GetValue("Download folder", System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
-			MIMETypes = GetMIMETypes();
-			TextEncoding = GetTextEncoding();
-		}
-
-		static Encoding GetTextEncoding()
-		{
-			Encoding code;
-			if(Settings.GetValue("Use windows default code page", true) == true)
-				code = Encoding.Default;
-			else
-			{
-				string strCodePage = Settings.GetValue("Settings code page");
-				Regex reg = new Regex(@"\([0-9]*\)");
-				strCodePage = reg.Match(strCodePage).Value;
-				code = Encoding.GetEncoding(int.Parse(strCodePage.Trim('(', ')')));
-			}
-			return code;
-		}
-		
-		// construct MIME types string from settings xml file
-		static string GetMIMETypes()
-		{
-			string str = "";
-			// check for settings xml file existence
-			if(File.Exists(Application.StartupPath+"\\Settings.xml"))
-			{
-				XmlDocument doc = new XmlDocument();
-				doc.Load(Application.StartupPath+"\\Settings.xml");
-				XmlNode element = doc.DocumentElement.SelectSingleNode("SettingsForm-listViewFileMatches");
-				if(element != null)
-				{
-					for(int n = 0; n < element.ChildNodes.Count; n++)
-					{
-						XmlNode xmlnode  = element.ChildNodes[n];
-						XmlAttribute attribute  = xmlnode.Attributes["Checked"];
-						if(attribute == null || attribute.Value.ToLower() != "true")
-							continue;
-						string[] items = xmlnode.InnerText.Split('\t');
-						if(items.Length > 1)
-						{
-							str += items[0];
-							if(items.Length > 2)
-								str += '['+items[1]+','+items[2]+']';
-							str += ';';
-						}
-					}
-				}
-			}
-			return str;
 		}
 
 		private void buttonGo_Click(object sender, System.EventArgs e)
 		{
-			StartParsing();
+            this.buttonGo.Enabled = false;
+
+            // insert combo text in the combo list
+            if (this.comboBoxWeb.FindStringExact(this.comboBoxWeb.Text) < 0)
+                this.comboBoxWeb.Items.Insert(0, this.comboBoxWeb.Text);
+            StartParsing();
+
+            this.toolBarButtonContinue.Enabled = false;
+            this.toolBarButtonPause.Enabled = true;
 		}
 
 		void StartParsing()
-		{			
-			this.buttonGo.Enabled = false;
-			// insert combo text in the combo list
-			if(this.comboBoxWeb.FindStringExact(this.comboBoxWeb.Text) < 0)
-				this.comboBoxWeb.Items.Insert(0, this.comboBoxWeb.Text);
-
+		{
 			if(threadParse == null || threadParse.ThreadState != ThreadState.Suspended)
 			{
 				this.urlStorage.Clear();
@@ -1340,10 +1012,7 @@ namespace Crawler
 			}
 
 			// update running threads
-			ThreadCount = Settings.GetValue("Threads count", 10);
-
-			this.toolBarButtonContinue.Enabled = false;
-			this.toolBarButtonPause.Enabled = true;
+			ThreadCount = SettingLoader.GetValue("Threads count", 10);
 		}
 
 		void ContinueParsing()
@@ -1354,7 +1023,7 @@ namespace Crawler
 				threadParse.Resume();
 
 			// update running threads
-			ThreadCount = Settings.GetValue("Threads count", 10);
+			ThreadCount = SettingLoader.GetValue("Threads count", 10);
 
 			this.toolBarButtonContinue.Enabled = false;
 			this.toolBarButtonPause.Enabled = true;
@@ -1378,7 +1047,6 @@ namespace Crawler
 		// abort all working threads
 		void StopParsing()
 		{
-			this.queueURLS.Clear();
 			ThreadsRunning = false;
 			Thread.Sleep(500);
 			try
@@ -1416,7 +1084,6 @@ namespace Crawler
 			this.toolBarButtonPause.Enabled = false;
 			this.buttonGo.Enabled = true;
 
-			this.queueURLS.Clear();
 			this.urlStorage.Clear();
 		}
 
@@ -1428,12 +1095,12 @@ namespace Crawler
 				MyUri uri = DequeueUri();
 				if(uri != null)
 				{
-					if(SleepConnectTime > 0)
-						Thread.Sleep(SleepConnectTime*1000);
+					if(settingT.SleepConnectTime > 0)
+                        Thread.Sleep(settingT.SleepConnectTime * 1000);
 					ParseUri(uri, ref request);
 				}
 				else
-					Thread.Sleep(SleepFetchTime*1000);
+                    Thread.Sleep(settingT.SleepFetchTime * 1000);
 			}
 
 			Monitor.Enter(this.listViewThreads);
@@ -1450,42 +1117,7 @@ namespace Crawler
 			Monitor.Exit(this.listViewThreads);
 		}
 
-		// push uri to the queue
-		bool EnqueueUri(MyUri uri, bool bCheckRepetition)
-		{
-			// add the uri to the binary tree to check if it is duplicated or not
-			if(bCheckRepetition == true && AddURL(ref uri) == false)
-				return false;
 
-			Monitor.Enter(queueURLS);
-			try
-			{
-				// add the uri to the queue
-				queueURLS.Enqueue(uri);
-			}
-			catch(Exception)
-			{
-			}
-			Monitor.Exit(queueURLS);
-
-			return true;
-		}
-
-		// pop uri from the queue
-		MyUri DequeueUri()
-		{
-			Monitor.Enter(queueURLS);
-			MyUri uri = null;
-			try
-			{
-				uri = (MyUri)queueURLS.Dequeue();
-			}
-			catch(Exception)
-			{
-			}
-			Monitor.Exit(queueURLS);
-			return uri;
-		}
 
 		void RunParser()
 		{
@@ -1524,28 +1156,7 @@ namespace Crawler
 				strURL += '/';
 		}
 
-		bool AddURL(ref MyUri uri)
-		{
-			foreach(string str in ExcludeHosts)
-				if(str.Trim().Length > 0 && uri.Host.ToLower().IndexOf(str.Trim()) != -1)
-				{
-					LogError(uri.AbsoluteUri, "\r\nHost excluded as it includes reserved pattern ("+str+")");
-					return false;
-				}
-			Monitor.Enter(urlStorage);
-			bool bNew = false;
-			try
-			{
-				string strURL = uri.AbsoluteUri;
-				bNew = urlStorage.Add(ref strURL).Count == 1;
-			}
-			catch(Exception)
-			{
-			}
-			Monitor.Exit(urlStorage);
-			
-			return bNew;
-		}
+
 
 		void LogCell(ref ListViewItem itemLog, int nCell, string str)
 		{
@@ -1593,9 +1204,9 @@ namespace Crawler
 			try
 			{
 				// create web request
-				request = MyWebRequest.Create(uri, request, KeepAlive);
+                request = MyWebRequest.Create(uri, request, settingT.KeepAlive);
 				// set request timeout
-				request.Timeout = RequestTimeout*1000;
+                request.Timeout = settingT.RequestTimeout * 1000;
 				// retrieve response from web request
 				MyWebResponse response = request.GetResponse();
 				// update status text with the request and response headers
@@ -1616,20 +1227,20 @@ namespace Crawler
 				}
 
 				// check for allowed MIME types
-				if(AllMIMETypes == false && response.ContentType != null && MIMETypes.Length > 0)
+                if (inputT.AllMIMETypes == false && response.ContentType != null && settingT.MIMETypes.Length > 0)
 				{
 					string strContentType = response.ContentType.ToLower();
 					int nExtIndex = strContentType.IndexOf(';');
 					if(nExtIndex != -1)
 						strContentType = strContentType.Substring(0, nExtIndex);
-					if(strContentType.IndexOf('*') == -1 && (nExtIndex = MIMETypes.IndexOf(strContentType)) == -1)
+                    if (strContentType.IndexOf('*') == -1 && (nExtIndex = settingT.MIMETypes.IndexOf(strContentType)) == -1)
 					{
 						LogError(uri.AbsoluteUri, strStatus+"\r\nUnlisted Content-Type ("+strContentType+"), check settings.");
 						request = null;
 						return;
 					}
 					// find numbers
-					Match match = new Regex(@"\d+").Match(MIMETypes, nExtIndex);
+                    Match match = new Regex(@"\d+").Match(settingT.MIMETypes, nExtIndex);
 					int nMin = int.Parse(match.Value)*1024;
 					match = match.NextMatch();
 					int nMax = int.Parse(match.Value)*1024;
@@ -1641,7 +1252,7 @@ namespace Crawler
 					}
 				}
 				
-				// check for response extention
+				// check for response extension
 				string[] ExtArray = { ".gif", ".jpg", ".css", ".zip", ".exe"	};
 				bool bParse = true;
 				foreach(string ext in ExtArray)
@@ -1650,7 +1261,7 @@ namespace Crawler
 						bParse = false;
 						break;
 					}
-				foreach(string ext in ExcludeFiles)
+                foreach (string ext in settingT.ExcludeFiles)
 					if(ext.Trim().Length > 0 && uri.AbsoluteUri.ToLower().EndsWith(ext) == true)
 					{
 						bParse = false;
@@ -1663,20 +1274,20 @@ namespace Crawler
 				if(strLocalPath.EndsWith("/") == true)
 					// check if there is no query like (.asp?i=32&j=212)
 					if(uri.Query == "")
-						// add a default name for / ended pathes
+						// add a default name for / ended paths
 						strLocalPath += "default.html";
 				// check if the uri includes a query string
 				if(uri.Query != "")
 					// construct the name from the query hash value to be the same if we download it again
 					strLocalPath += uri.Query.GetHashCode()+".html";
 				// construct the full path folder
-				string BasePath = this.Downloadfolder+"\\"+uri.Host+Path.GetDirectoryName(uri.AbsolutePath);
+                string BasePath = this.settingT.Downloadfolder + "\\" + uri.Host + Path.GetDirectoryName(uri.AbsolutePath);
 				// check if the folder not found
 				if(Directory.Exists(BasePath) == false)
 					// create the folder
 					Directory.CreateDirectory(BasePath);
 				// construct the full path name of the file
-				string PathName = this.Downloadfolder+"\\"+uri.Host+strLocalPath.Replace("%20", " ");
+                string PathName = this.settingT.Downloadfolder + "\\" + uri.Host + strLocalPath.Replace("%20", " ");
 				// open the output file
 				FileStream streamOut = File.Open(PathName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
 				BinaryWriter writer = new BinaryWriter(streamOut);
@@ -1711,7 +1322,7 @@ namespace Crawler
 				streamOut.Close();
 				
 				if(response.KeepAlive)
-					strStatus += "Connection kept alive to be used in subpages.\r\n";
+					strStatus += "Connection kept alive to be used in sub pages.\r\n";
 				else
 				{
 					// close response
@@ -1725,12 +1336,12 @@ namespace Crawler
 				// increment total bytes count
 				ByteCount += nTotalBytes;
 
-				if(ThreadsRunning == true && bParse == true && uri.Depth < WebDepth)
+                if (ThreadsRunning == true && bParse == true && uri.Depth < settingT.WebDepth)
 				{
 					strStatus += "\r\nParsing page ...\r\n";
 
 					// check for restricted words
-					foreach(string strExcludeWord in ExcludeWords)
+                    foreach (string strExcludeWord in settingT.ExcludeWords)
 						if(strExcludeWord.Trim().Length > 0 && strResponse.IndexOf(strExcludeWord) != -1)
 						{
 							LogError(uri.AbsoluteUri, strStatus+"\r\nPage includes reserved word ("+strExcludeWord+")");
@@ -1755,7 +1366,7 @@ namespace Crawler
 							MyUri newUri = new MyUri(strRef);
 							if(newUri.Scheme != Uri.UriSchemeHttp && newUri.Scheme != Uri.UriSchemeHttps)
 								continue;
-							if(newUri.Host != uri.Host && KeepSameServer == true)
+                            if (newUri.Host != uri.Host && settingT.KeepSameServer == true)
 								continue;
 							newUri.Depth = uri.Depth+1;
 							if(this.EnqueueUri(newUri, true) == true)
@@ -1801,14 +1412,14 @@ namespace Crawler
 
 		void LogUri(string strHead, string strBody)
 		{
-			if(LastRequestCount > 0)
+            if (settingT.LastRequestCount > 0)
 			{
 				Monitor.Enter(this.listViewRequests);
 				try
 				{
 					ListViewItem item = this.listViewRequests.Items.Insert(0, DateTime.Now.ToString());
 					item.SubItems.AddRange(new String[] { strHead, strBody });
-					while(this.listViewRequests.Items.Count > LastRequestCount)
+                    while (this.listViewRequests.Items.Count > settingT.LastRequestCount)
 						this.listViewRequests.Items.RemoveAt(this.listViewRequests.Items.Count-1);
 				}
 				catch(Exception)
@@ -1908,7 +1519,7 @@ namespace Crawler
 
 		private void CrawlerForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			Settings.SetValue(this);
+			SettingLoader.SetValue(this);
 		}
 
 		private void menuItemAbout_Click(object sender, System.EventArgs e)
@@ -2095,133 +1706,5 @@ namespace Crawler
 		
 		}
 
-
-	}
-
-	public class MyUri : System.Uri
-    {
-        public int Depth;
-		public MyUri(string uriString):base(uriString)
-		{
-		}
-	}
-
-	public class MyWebRequest
-    {
-        public int Timeout;
-        public WebHeaderCollection Headers;
-        public string Header;
-        public Uri RequestUri;
-        public string Method;
-        public MyWebResponse response;
-        public bool KeepAlive;
-		public MyWebRequest(Uri uri, bool bKeepAlive)
-		{
-			Headers = new WebHeaderCollection();
-			RequestUri = uri;
-			Headers["Host"] = uri.Host;
-			KeepAlive = bKeepAlive;
-			if(KeepAlive)
-				Headers["Connection"] = "Keep-Alive";
-			Method = "GET";
-		}
-		public static MyWebRequest Create(Uri uri, MyWebRequest AliveRequest, bool bKeepAlive)
-		{
-			if( bKeepAlive &&
-				AliveRequest != null &&
-				AliveRequest.response != null &&
-				AliveRequest.response.KeepAlive && 
-				AliveRequest.response.socket.Connected && 
-				AliveRequest.RequestUri.Host == uri.Host)
-			{
-				AliveRequest.RequestUri = uri;
-				return AliveRequest;
-			}
-			return new MyWebRequest(uri, bKeepAlive);
-		}
-		public MyWebResponse GetResponse()
-		{
-			if(response == null || response.socket == null || response.socket.Connected == false)
-			{
-				response = new MyWebResponse();
-				response.Connect(this);
-				response.SetTimeout(Timeout);
-			}
-			response.SendRequest(this);
-			response.ReceiveHeader();
-			return response;
-		}
-	}
-	public class MyWebResponse
-    {
-        public Uri ResponseUri;
-        public string ContentType;
-        public int ContentLength;
-        public WebHeaderCollection Headers;
-        public string Header;
-        public Socket socket;
-        public bool KeepAlive;
-		public MyWebResponse()
-		{
-		}
-		public void Connect(MyWebRequest request)
-		{
-			ResponseUri = request.RequestUri;
-			
-			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-			IPEndPoint remoteEP = new IPEndPoint(Dns.Resolve(ResponseUri.Host).AddressList[0], ResponseUri.Port);
-			socket.Connect(remoteEP);			
-		}
-		public void SendRequest(MyWebRequest request)
-		{
-			ResponseUri = request.RequestUri;
-
-			request.Header = request.Method+" "+ResponseUri.PathAndQuery+" HTTP/1.0\r\n"+request.Headers;
-			socket.Send(Encoding.ASCII.GetBytes(request.Header));
-		}
-		public void SetTimeout(int Timeout)
-		{
-			socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, Timeout*1000);
-			socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, Timeout*1000);
-		}
-		public void ReceiveHeader()
-		{
-			Header = "";
-			Headers = new WebHeaderCollection();
-
-			byte[] bytes = new byte[10];
-			while(socket.Receive(bytes, 0, 1, SocketFlags.None) > 0)
-			{
-				Header += Encoding.ASCII.GetString(bytes, 0, 1);
-				if(bytes[0] == '\n' && Header.EndsWith("\r\n\r\n"))
-					break;
-			}
-			MatchCollection matches = new Regex("[^\r\n]+").Matches(Header.TrimEnd('\r', '\n'));
-			for(int n = 1; n < matches.Count; n++)
-			{
-				string[] strItem = matches[n].Value.Split(new char[] { ':' }, 2);
-				if(strItem.Length > 0)
-					Headers[strItem[0].Trim()] = strItem[1].Trim();
-			}
-			// check if the page should be transfered to another location
-			if( matches.Count > 0 && (
-				matches[0].Value.IndexOf(" 302 ") != -1 || 
-				matches[0].Value.IndexOf(" 301 ") != -1))
-				// check if the new location is sent in the "location" header
-				if(Headers["Location"] != null)
-				{
-					try		{	ResponseUri = new Uri(Headers["Location"]);		}
-					catch	{	ResponseUri = new Uri(ResponseUri, Headers["Location"]);		}
-				}
-			ContentType = Headers["Content-Type"];
-			if(Headers["Content-Length"] != null)
-				ContentLength = int.Parse(Headers["Content-Length"]);
-			KeepAlive = (Headers["Connection"] != null && Headers["Connection"].ToLower() == "keep-alive") ||
-						(Headers["Proxy-Connection"] != null && Headers["Proxy-Connection"].ToLower() == "keep-alive");
-		}
-		public void Close()
-		{
-			socket.Close();
-		}
 	}
 }

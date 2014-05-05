@@ -4,14 +4,14 @@ using System.Text;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
-using LiteLib;
+using Crawer;
 
 namespace Crawler
 {
 	/// <summary>
 	/// Summary description for SettingsForm.
 	/// </summary>
-	public class SettingsForm : System.Windows.Forms.Form
+	public class SettingForm : System.Windows.Forms.Form
 	{
 		public int SelectedIndex = -1;
 		private System.Windows.Forms.TabControl tabControlSettings;
@@ -71,7 +71,7 @@ namespace Crawler
 		/// </summary>
 		private System.ComponentModel.Container components = null;
 
-		public SettingsForm()
+		public SettingForm()
 		{
 			//
 			// Required for Windows Form Designer support
@@ -206,7 +206,7 @@ namespace Crawler
 																													  "application/x-msdownload",
 																													  "0",
 																													  "0"}, -1, System.Drawing.SystemColors.WindowText, System.Drawing.Color.WhiteSmoke, new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0))));
-			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(SettingsForm));
+			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(SettingForm));
 			this.tabControlSettings = new System.Windows.Forms.TabControl();
 			this.tabPageFileMatches = new System.Windows.Forms.TabPage();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -1018,7 +1018,7 @@ namespace Crawler
 
 		private void SettingsForm_Load(object sender, System.EventArgs e)
 		{
-			Settings.GetValue(this);
+			SettingLoader.GetValue(this);
 			this.comboBoxSettingsCodePage.Enabled = this.checkBoxSettingsUseWindowsDefaultCodePage.Checked == false;
 
 			if(this.textBoxDownloadFolder.Text == "")
@@ -1030,7 +1030,7 @@ namespace Crawler
 
 		private void buttonSettingsOK_Click(object sender, System.EventArgs e)
 		{
-			Settings.SetValue(this);
+			SettingLoader.SetValue(this);
 		}
 
 		private void checkBoxSettingsUseWindowsDefaultCodePage_CheckedChanged(object sender, System.EventArgs e)
