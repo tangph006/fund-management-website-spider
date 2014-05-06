@@ -133,7 +133,7 @@ namespace Engine
             InitValues();
         }
 
-        // construct all from registry.
+        // construct all.
         public void InitValues()
         {
             WebDepth = SettingLoader.GetValue("Web depth", 3);

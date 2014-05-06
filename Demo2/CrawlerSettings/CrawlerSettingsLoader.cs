@@ -172,83 +172,83 @@ public class SettingLoader
         return node;
     }
 
-    public static void GetValue(Form form)
-    {
-        Control ctrl = null;
-        while ((ctrl = form.GetNextControl(ctrl, true)) != null)
-            SettingLoader.GetValue(ctrl);
-    }
-    public static void GetValue(Control ctrl)
-    {
-        string Name = ctrl.FindForm().Name + '-' + ctrl.Name;
-        if (ctrl.Tag != null && ctrl.Tag.ToString().Trim().Length > 0)
-            switch (ctrl.GetType().Name)
-            {
-                case "TextBox":
-                    ctrl.Text = SettingLoader.GetValue((string)ctrl.Tag, ctrl.Text);
-                    break;
-                case "CheckBox":
-                    CheckBox check = (CheckBox)ctrl;
-                    check.Checked = SettingLoader.GetValue((string)ctrl.Tag, check.Checked);
-                    break;
-                case "RadioButton":
-                    RadioButton radio = (RadioButton)ctrl;
-                    radio.Checked = SettingLoader.GetValue((string)ctrl.Tag, radio.Checked);
-                    break;
-                case "NumericUpDown":
-                    NumericUpDown numeric = (NumericUpDown)ctrl;
-                    numeric.Value = decimal.Parse(SettingLoader.GetValue((string)ctrl.Tag, numeric.Value.ToString()));
-                    break;
-                case "TabControl":
-                    TabControl tab = (TabControl)ctrl;
-                    tab.SelectedIndex = int.Parse(SettingLoader.GetValue((string)ctrl.Tag, tab.SelectedIndex.ToString()));
-                    break;
-                case "ComboBox":
-                    ComboBox combo = (ComboBox)ctrl;
-                    try
-                    {
-                        XmlNode element = GetCtrlNode(ctrl);
-                        if (element != null && element.ChildNodes.Count > 0)
-                        {
-                            combo.Items.Clear();
-                            foreach (XmlNode node in element.ChildNodes)
-                                combo.Items.Add(node.InnerText);
-                        }
-                    }
-                    catch (XmlException)
-                    {
-                    }
-                    combo.Text = SettingLoader.GetValue(Name, combo.Text);
-                    break;
-                case "ListView":
-                    ListView list = (ListView)ctrl;
-                    try
-                    {
-                        XmlNode element = GetCtrlNode(ctrl);
-                        if (element != null && element.ChildNodes.Count > 0)
-                        {
-                            list.Items.Clear();
-                            foreach (XmlNode node in element.ChildNodes)
-                            {
-                                string[] items = node.InnerText.Split('\t');
-                                ListViewItem viewItem = list.Items.Add(items[0]);
-                                for (int nIndex = 1; nIndex < items.Length; nIndex++)
-                                    viewItem.SubItems.Add(items[nIndex]);
-                                if (list.CheckBoxes == true)
-                                {
-                                    XmlAttribute attribute = node.Attributes["Checked"];
-                                    if (attribute != null)
-                                        viewItem.Checked = attribute.Value.ToLower() == "true";
-                                }
-                            }
-                        }
-                    }
-                    catch (XmlException)
-                    {
-                    }
-                    break;
-            }
-    }
+//     public static void GetValue(Form form)
+//     {
+//         Control ctrl = null;
+//         while ((ctrl = form.GetNextControl(ctrl, true)) != null)
+//             SettingLoader.GetValue(ctrl);
+//     }
+//     public static void GetValue(Control ctrl)
+//     {
+//         string Name = ctrl.FindForm().Name + '-' + ctrl.Name;
+//         if (ctrl.Tag != null && ctrl.Tag.ToString().Trim().Length > 0)
+//             switch (ctrl.GetType().Name)
+//             {
+//                 case "TextBox":
+//                     ctrl.Text = SettingLoader.GetValue((string)ctrl.Tag, ctrl.Text);
+//                     break;
+//                 case "CheckBox":
+//                     CheckBox check = (CheckBox)ctrl;
+//                     check.Checked = SettingLoader.GetValue((string)ctrl.Tag, check.Checked);
+//                     break;
+//                 case "RadioButton":
+//                     RadioButton radio = (RadioButton)ctrl;
+//                     radio.Checked = SettingLoader.GetValue((string)ctrl.Tag, radio.Checked);
+//                     break;
+//                 case "NumericUpDown":
+//                     NumericUpDown numeric = (NumericUpDown)ctrl;
+//                     numeric.Value = decimal.Parse(SettingLoader.GetValue((string)ctrl.Tag, numeric.Value.ToString()));
+//                     break;
+//                 case "TabControl":
+//                     TabControl tab = (TabControl)ctrl;
+//                     tab.SelectedIndex = int.Parse(SettingLoader.GetValue((string)ctrl.Tag, tab.SelectedIndex.ToString()));
+//                     break;
+//                 case "ComboBox":
+//                     ComboBox combo = (ComboBox)ctrl;
+//                     try
+//                     {
+//                         XmlNode element = GetCtrlNode(ctrl);
+//                         if (element != null && element.ChildNodes.Count > 0)
+//                         {
+//                             combo.Items.Clear();
+//                             foreach (XmlNode node in element.ChildNodes)
+//                                 combo.Items.Add(node.InnerText);
+//                         }
+//                     }
+//                     catch (XmlException)
+//                     {
+//                     }
+//                     combo.Text = SettingLoader.GetValue(Name, combo.Text);
+//                     break;
+//                 case "ListView":
+//                     ListView list = (ListView)ctrl;
+//                     try
+//                     {
+//                         XmlNode element = GetCtrlNode(ctrl);
+//                         if (element != null && element.ChildNodes.Count > 0)
+//                         {
+//                             list.Items.Clear();
+//                             foreach (XmlNode node in element.ChildNodes)
+//                             {
+//                                 string[] items = node.InnerText.Split('\t');
+//                                 ListViewItem viewItem = list.Items.Add(items[0]);
+//                                 for (int nIndex = 1; nIndex < items.Length; nIndex++)
+//                                     viewItem.SubItems.Add(items[nIndex]);
+//                                 if (list.CheckBoxes == true)
+//                                 {
+//                                     XmlAttribute attribute = node.Attributes["Checked"];
+//                                     if (attribute != null)
+//                                         viewItem.Checked = attribute.Value.ToLower() == "true";
+//                                 }
+//                             }
+//                         }
+//                     }
+//                     catch (XmlException)
+//                     {
+//                     }
+//                     break;
+//             }
+//     }
 
     // construct MIME types string from settings XML file
     public static string GetMIMETypes()
