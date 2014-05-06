@@ -17,7 +17,7 @@ using LiteLib;
 
 namespace Crawler
 {
-    public class ParserT
+    public class CrawlerEngine
     {
         public SettingT settingT { get; set; }
         public InputT inputT { get; set; }
@@ -26,7 +26,7 @@ namespace Crawler
         // flag to be used to stop all running threads when user request to stop
         public bool ThreadsRunning { get; set; }
 
-        public ParserT(SettingT sT, InputT iT, OutputT oT)
+        public CrawlerEngine(SettingT sT, InputT iT, OutputT oT)
         {
             this.settingT = sT;
             this.inputT = iT;

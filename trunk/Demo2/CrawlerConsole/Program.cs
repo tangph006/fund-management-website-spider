@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Demo
+namespace CrawlerConsole
 {
-    public class InputT
+    class Program
     {
+        static void Main(string[] args)
+        {
+        }
     }
 }

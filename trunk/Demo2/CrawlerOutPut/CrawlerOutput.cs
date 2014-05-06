@@ -11,11 +11,10 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Net;
 using System.Net.Sockets;
-using LiteLib;
 
-namespace Demo
+namespace Engine
 {
-    public class OutputT
+    public class CrawlerOutput
     {		// thread that take the browse editor text to parse it
         private Thread threadParse;
         // binary tree to keep unique Uri's

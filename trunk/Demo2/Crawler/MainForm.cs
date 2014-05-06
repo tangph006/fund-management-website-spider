@@ -29,7 +29,7 @@ namespace Crawler
         // output of parse/crawl result
         public OutputT outputT;
         // the hard working man
-        public ParserT parserT;
+        public CrawlerEngine parserT;
 
 
 		private System.Windows.Forms.MenuItem menuItemFile;
