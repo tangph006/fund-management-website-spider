@@ -15,7 +15,8 @@ using System.Net.Sockets;
 namespace Engine
 {
     public class CrawlerOutput
-    {		// thread that take the browse editor text to parse it
+    {		
+        // thread that take the browse editor text to parse it
         private Thread threadParse;
         // binary tree to keep unique Uri's
         private SortTree urlStorage;
@@ -26,7 +27,7 @@ namespace Engine
 
         // number of bytes downloaded
         private int nByteCount;
-        private int ByteCount
+        public int ByteCount
         {
             get { return nByteCount; }
             set
@@ -38,7 +39,7 @@ namespace Engine
 
         // number of errors during the download process
         private int nErrorCount;
-        private int ErrorCount
+        public int ErrorCount
         {
             get { return nErrorCount; }
             set
@@ -50,7 +51,7 @@ namespace Engine
 
         // number of Uri's found
         private int nURLCount;
-        private int URLCount
+        public int URLCount
         {
             get { return nURLCount; }
             set
@@ -62,7 +63,7 @@ namespace Engine
 
         // available memory
         private float nFreeMemory;
-        private float FreeMemory
+        public float FreeMemory
         {
             get { return nFreeMemory; }
             set
@@ -74,7 +75,7 @@ namespace Engine
 
         // CPU usage
         private int nCPUUsage;
-        private int CPUUsage
+        public int CPUUsage
         {
             get { return nCPUUsage; }
             set
@@ -89,7 +90,7 @@ namespace Engine
 
         // number of files downloaded
         private int nFileCount;
-        private int FileCount
+        public int FileCount
         {
             get { return nFileCount; }
             set
@@ -104,7 +105,7 @@ namespace Engine
 
         // number of running threads
         private int nThreadCount;
-        private int ThreadCount
+        public int ThreadCount
         {
             get { return nThreadCount; }
             set
