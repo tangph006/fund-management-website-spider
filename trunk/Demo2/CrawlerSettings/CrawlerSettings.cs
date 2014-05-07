@@ -3,14 +3,14 @@ using System.IO;
 using System.Xml;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Runtime.Serialization.Json.DataContractJsonSerializer;
+using System.Runtime.Serialization.Json;
 
-namespace Engine
+namespace CrawlerSettings
 {
-    public class CrawlerSettings
+    public class CrawlerSettings : Component
     {
 		// MIME types string
-		private string strMIMETypes = SettingLoader.GetMIMETypes();
+		private string strMIMETypes;// = SettingLoader.GetMIMETypes();
 		public string MIMETypes
 		{
 			get	{	return strMIMETypes;	}
@@ -18,7 +18,7 @@ namespace Engine
 		}
 
 		// encoding text that includes all settings types in one string
-        private Encoding encoding = SettingLoader.GetTextEncoding();
+        private Encoding encoding;// = SettingLoader.GetTextEncoding();
         public Encoding TextEncoding
 		{
 			get	{	return encoding;	}
@@ -127,29 +127,16 @@ namespace Engine
             }
         }
 
-        // constructor
+        // private constructor, can not create instance.
         public CrawlerSettings()
         {
-            InitValues();
         }
 
-        // construct all.
-        public void InitValues()
+        public string GetSerializedString()
         {
-            WebDepth = SettingLoader.GetValue("Web depth", 3);
-            RequestTimeout = SettingLoader.GetValue("Request timeout", 20);
-            SleepFetchTime = SettingLoader.GetValue("Sleep fetch time", 2);
-            SleepConnectTime = SettingLoader.GetValue("Sleep connect time", 1);
-            KeepSameServer = SettingLoader.GetValue("Keep same URL server", false);
-            AllMIMETypes = SettingLoader.GetValue("Allow all MIME types", true);
-            KeepAlive = SettingLoader.GetValue("Keep connection alive", true);
-            ExcludeHosts = SettingLoader.GetValue("Exclude Hosts", ".org; .gov;").Replace("*", "").ToLower().Split(';');
-            ExcludeWords = SettingLoader.GetValue("Exclude words", "").Split(';');
-            ExcludeFiles = SettingLoader.GetValue("Exclude files", "").Replace("*", "").ToLower().Split(';');
-            LastRequestCount = SettingLoader.GetValue("View last requests count", 20);
-            Downloadfolder = SettingLoader.GetValue("Download folder", System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
-            MIMETypes = SettingLoader.GetMIMETypes();
-            TextEncoding = SettingLoader.GetTextEncoding();
+            return "";
         }
+
+        
     }
 }

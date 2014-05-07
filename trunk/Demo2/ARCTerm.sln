@@ -16,6 +16,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrawlerOutPut", "CrawlerOut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrawlerSettings", "CrawlerSettings\CrawlerSettings.csproj", "{160E06B7-BD81-4DD5-9F73-21391095ED92}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{989701A4-DE45-4BF2-8123-1BF06978445C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonSample1", "JsonSample1\JsonSample1.csproj", "{F90B8E2C-62F6-494F-A298-96C9EC348491}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonSample2", "JsonSample2\JsonSample2.csproj", "{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DecratorSample1", "DecratorSample1\DecratorSample1.csproj", "{703E9A47-186D-480C-9535-3D4FD197482D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,8 +114,43 @@ Global
 		{160E06B7-BD81-4DD5-9F73-21391095ED92}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{160E06B7-BD81-4DD5-9F73-21391095ED92}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{160E06B7-BD81-4DD5-9F73-21391095ED92}.Release|x86.ActiveCfg = Release|Any CPU
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Debug|x86.ActiveCfg = Debug|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Debug|x86.Build.0 = Debug|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Release|Any CPU.ActiveCfg = Release|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Release|Mixed Platforms.Build.0 = Release|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Release|x86.ActiveCfg = Release|x86
+		{F90B8E2C-62F6-494F-A298-96C9EC348491}.Release|x86.Build.0 = Release|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Debug|x86.ActiveCfg = Debug|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Debug|x86.Build.0 = Debug|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Release|Any CPU.ActiveCfg = Release|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Release|Mixed Platforms.Build.0 = Release|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Release|x86.ActiveCfg = Release|x86
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9}.Release|x86.Build.0 = Release|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Debug|x86.ActiveCfg = Debug|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Debug|x86.Build.0 = Debug|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Release|Any CPU.ActiveCfg = Release|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Release|Mixed Platforms.Build.0 = Release|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Release|x86.ActiveCfg = Release|x86
+		{703E9A47-186D-480C-9535-3D4FD197482D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F90B8E2C-62F6-494F-A298-96C9EC348491} = {989701A4-DE45-4BF2-8123-1BF06978445C}
+		{E4B96849-CF34-4AB9-A173-C9E8A9BDA4E9} = {989701A4-DE45-4BF2-8123-1BF06978445C}
+		{703E9A47-186D-480C-9535-3D4FD197482D} = {989701A4-DE45-4BF2-8123-1BF06978445C}
 	EndGlobalSection
 EndGlobal
