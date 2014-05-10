@@ -3,140 +3,201 @@ using System.IO;
 using System.Xml;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 
-namespace CrawlerSettings
+namespace Settings
 {
-    public class CrawlerSettings : Component
+    [DataContract]
+    public class CrawlerSettings : CrawlerCommon.CrawlerFileEntity
     {
 		// MIME types string
-		private string strMIMETypes;// = SettingLoader.GetMIMETypes();
-		public string MIMETypes
+        [DataMember(Order = 0)]
+		private string MIMETypes;// = SettingLoader.GetMIMETypes();
+		public string MIMETypes_
 		{
-			get	{	return strMIMETypes;	}
-			set	{	strMIMETypes = value;	}
+			get	{	return MIMETypes;	}
+			set	{	MIMETypes = value;	}
 		}
 
 		// encoding text that includes all settings types in one string
+        [DataMember(Order = 1)]
         private Encoding encoding;// = SettingLoader.GetTextEncoding();
-        public Encoding TextEncoding
+        public Encoding encoding_
 		{
 			get	{	return encoding;	}
 			set	{	encoding = value;	}
 		}
 
 		// timeout of sockets send and receive
-		private int nRequestTimeout;
-        public int RequestTimeout
+        [DataMember(Order = 2)]
+		private int requestTimeout;
+        public int requestTimeout_
 		{
-			get	{	return nRequestTimeout;	}
-			set	{	nRequestTimeout = value;	}
+            get { return requestTimeout; }
+            set { requestTimeout = value; }
 		}
 
 		// the time that each thread sleeps when the refs queue empty
-		private int nSleepFetchTime;
-        public int SleepFetchTime
+        [DataMember(Order = 3)]
+		private int sleepFetchTime;
+        public int sleepFetchTime_
 		{
-			get	{	return nSleepFetchTime;	}
-			set	{	nSleepFetchTime = value;	}
+            get { return sleepFetchTime; }
+            set { sleepFetchTime = value; }
 		}		
 		
-		// List of a user defined list of restricted words to enable user to prevent any bad pages 
-		private string[] strExcludeWords;
-        public string[] ExcludeWords
+		// List of a user defined list of restricted words to enable user to prevent any bad pages
+        [DataMember(Order = 4)]
+		private string[] excludeWords;
+        public string[] excludeWords_
 		{
-			get	{	return strExcludeWords;	}
-			set	{	strExcludeWords = value;	}
+            get { return excludeWords; }
+            set { excludeWords = value; }
 		}
 
 		// List of a user defined list of restricted files extensions to avoid paring non-text data 
-		private string[] strExcludeFiles;
-        public string[] ExcludeFiles
+        [DataMember(Order = 5)]
+		private string[] excludeFiles;
+        public string[] excludeFiles_
 		{
-			get	{	return strExcludeFiles;	}
-			set	{	strExcludeFiles = value;	}
+            get { return excludeFiles; }
+            set { excludeFiles = value; }
 		}
 
 		// List of a user defined list of restricted hosts extensions to avoid blocking by these hosts
-		private string[] strExcludeHosts;
-        public string[] ExcludeHosts
+        [DataMember(Order = 6)]
+		private string[] excludeHosts;
+        public string[] excludeHosts_
 		{
-			get	{	return strExcludeHosts;	}
-			set	{	strExcludeHosts = value;	}
+            get { return excludeHosts; }
+            set { excludeHosts = value; }
 		}
 		
 		// the number of requests to keep in the requests view for review requests details
-		private int nLastRequestCount;
-        public int LastRequestCount
+        [DataMember(Order = 7)]
+		private int lastRequestCount;
+        public int lastRequestCount_
 		{
-			get	{	return nLastRequestCount;	}
-			set	{	nLastRequestCount = value;	}
+            get { return lastRequestCount; }
+            set { lastRequestCount = value; }
 		}
 		
 		// the time that each thread sleep after handling any request, 
 		// which is very important value to prevent Hosts from blocking the crawler due to heavy load
-		private int nSleepConnectTime;
-        public int SleepConnectTime
+        [DataMember(Order = 8)]
+		private int sleepConnectTime;
+        public int sleepConnectTime_
 		{
-			get	{	return nSleepConnectTime;	}
-			set	{	nSleepConnectTime = value;	}
+            get { return sleepConnectTime; }
+            set { sleepConnectTime = value; }
 		}
 
 		// represents the depth of navigation in the crawling process
-		private int nWebDepth;
-        public int WebDepth
+        [DataMember(Order = 9)]
+		private int webDepth;
+        public int webDepth_
 		{
-			get	{	return nWebDepth;	}
-			set	{	nWebDepth = value;	}
+            get { return webDepth; }
+            set { webDepth = value; }
 		}
 
 		// MIME types are the types that are supported to be downloaded by the crawler 
 		// and the crawler includes a default types to be used. 
-		private bool bAllMIMETypes;
-        public bool AllMIMETypes
+        [DataMember(Order = 10)]
+		private bool allMIMETypes;
+        public bool allMIMETypes_
 		{
-			get	{	return bAllMIMETypes;	}
-			set	{	bAllMIMETypes = value;	}
+            get { return allMIMETypes; }
+            set { allMIMETypes = value; }
 		}		
 
 		// to limit crawling process to the same host of the original URL
-		private bool bKeepSameServer;
-        public bool KeepSameServer
+        [DataMember(Order = 11)]
+		private bool keepSameServer;
+        public bool keepSameServer_
 		{
-			get	{	return bKeepSameServer;	}
-			set	{	bKeepSameServer = value;	}
+            get { return keepSameServer; }
+            set { keepSameServer = value; }
 		}		
 		
 		// means keep socket connection opened for subsequent requests to avoid reconnect time
-		private bool bKeepAlive;
-        public bool KeepAlive
+        [DataMember(Order = 12)]
+		private bool keepAlive;
+        public bool keepAlive_
 		{
-			get	{	return bKeepAlive;	}
-			set	{	bKeepAlive = value;	}
+            get { return keepAlive; }
+            set { keepAlive = value; }
 		}			
 
         // download folder
-        private string strDownloadfolder;
-        public string Downloadfolder
+        [DataMember(Order = 13)]
+        private string downloadfolder;
+        public string downloadfolder_
         {
-            get { return strDownloadfolder; }
+            get { return downloadfolder; }
             set
             {
-                strDownloadfolder = value;
-                strDownloadfolder = strDownloadfolder.TrimEnd('\\');
+                downloadfolder = value;
+                downloadfolder = downloadfolder.TrimEnd('\\');
             }
         }
 
-        // private constructor, can not create instance.
+        // default constructor
         public CrawlerSettings()
         {
+            this.dataTypeName_ = "CrawlerSettings";
+            this.version_ = 1;
+            this.filePath_ = "CrawlerSettings.json";
         }
 
-        public string GetSerializedString()
+        // generate an instance from Json string
+        override public void FromJsonString(string jsonString)
         {
-            return "";
+            var mStream = new MemoryStream(Encoding.Default.GetBytes(jsonString));
+            var serializer = new DataContractJsonSerializer(typeof(CrawlerSettings));
+            CopyFrom((CrawlerSettings)serializer.ReadObject(mStream));
         }
 
-        
+        // translate 'this' to Json string
+        override public string ToJsonString()
+        {
+            try
+            {
+                var serializer = new DataContractJsonSerializer(typeof(CrawlerSettings));
+                var stream = new MemoryStream();
+                serializer.WriteObject(stream, this);
+                byte[] dataBytes = new byte[stream.Length];
+                stream.Position = 0;
+                stream.Read(dataBytes, 0, (int)stream.Length);
+                string jsonString = Encoding.UTF8.GetString(dataBytes);
+                return jsonString;
+            }
+            catch (System.Exception ex)
+            {
+                // TODO: error handling.
+                return "";
+            }
+        }
+
+        // copy from
+        public CrawlerSettings CopyFrom(CrawlerSettings other)
+        {
+            base.CopyFrom((CrawlerCommon.CrawlerFileEntity)other);
+            MIMETypes_ = other.MIMETypes_;
+            encoding_ = other.encoding_;
+            requestTimeout_ = other.requestTimeout_;
+            sleepFetchTime_ = other.sleepFetchTime_;
+            excludeWords_ = other.excludeWords_;
+            excludeFiles_ = other.excludeFiles_;
+            excludeHosts_ = other.excludeHosts_;
+            lastRequestCount_ = other.lastRequestCount_;
+            sleepConnectTime_ = other.sleepConnectTime_;
+            webDepth_ = other.webDepth_;
+            keepSameServer_ = other.keepSameServer_;
+            keepAlive_ = other.keepAlive_;
+            downloadfolder_ = other.downloadfolder_;
+            return this;
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace DecoratorExample
             Enhance enhancedWeapon = new Enhance(w);
             enhancedWeapon.EnhanceAmmo();
             enhancedWeapon.ShowInfo();
-            Wear wornWeapon = new Wear(w);
+            Wear wornWeapon = new Wear(enhancedWeapon);
             wornWeapon.WearByRate(0.8);
             wornWeapon.ShowInfo();
         }

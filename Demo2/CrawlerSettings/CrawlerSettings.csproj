@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{160E06B7-BD81-4DD5-9F73-21391095ED92}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CrawlerSettings</RootNamespace>
     <AssemblyName>CrawlerSettings</AssemblyName>
@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -41,9 +44,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Component.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CrawlerSettings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrawlerCommon\CrawlerCommon.csproj">
+      <Project>{800CF1D0-F143-42FA-A0F8-79E54A747E3A}</Project>
+      <Name>CrawlerCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

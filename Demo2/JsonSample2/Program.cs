@@ -13,14 +13,21 @@ namespace JsonSample2
         static void Main(string[] args)
         {
             string jsonStr = MyWriteOjbect();
+            FileStream fStream = new FileStream("json.txt", FileMode.OpenOrCreate);
+            fStream.Position = 0;
+            StreamWriter sWriter = new StreamWriter(fStream);
+            sWriter.Write(jsonStr);
+            sWriter.Close();
+            fStream.Close();
+
+            jsonStr = "";
+            fStream = new FileStream("json.txt", FileMode.Open);
+            StreamReader sReader = new StreamReader(fStream);
+            jsonStr = sReader.ReadToEnd();
+            sReader.Close();
+
+            MyReadObject(jsonStr);
             Console.ReadLine();
-            var config = new Config()
-            {
-                encoding_ = "UTF-8",
-                plugins_ = new string[] { "python", "C++", "C#" },
-                indent_ = new Indent() { length_ = 4, useSpace_ = false, test_ = 10000 }
-            };
-            string strTest = config.ToString();
         }
 
         static string MyWriteOjbect()
@@ -29,19 +36,18 @@ namespace JsonSample2
             {
                 encoding_ = "UTF-8",
                 plugins_ = new string[] { "python", "C++", "C#" },
-                indent_ = new Indent() { length_ = 4, useSpace_ = false, test_ = 10000 }
+                indent_ = new Indent() { length_ = 4, useSpace_ = false, strTest_ = "1234123412341" }
             };
+
             var serializer = new DataContractJsonSerializer(typeof(Config));
             var stream = new MemoryStream();
             serializer.WriteObject(stream, config);
-
             byte[] dataBytes = new byte[stream.Length];
-
             stream.Position = 0;
-
             stream.Read(dataBytes, 0, (int)stream.Length);
             string dataString = Encoding.UTF8.GetString(dataBytes);
-            Console.WriteLine("JSON string is:");
+
+            Console.WriteLine();
             Console.WriteLine(dataString);
             return dataString;
         }
@@ -54,13 +60,14 @@ namespace JsonSample2
 
             Console.WriteLine("encoding_: {0}", readConfig.encoding_);
             Console.WriteLine("indent.length_: {0}", readConfig.indent_.length_);
+            int nPluginCount = readConfig.plugins_.Length;
             foreach (string plugin in readConfig.plugins_)
             {
                 Console.WriteLine("plugins: {0}", plugin);
             }
             
             Console.WriteLine("indent.useSpace_: {0}", readConfig.indent_.useSpace_);
-            Console.WriteLine("indent.test_: {0}", readConfig.indent_.test_);
+            Console.WriteLine("indent.test_: {0}", readConfig.indent_.strTest_);
         }
     }
 
@@ -111,12 +118,19 @@ namespace JsonSample2
             set { useSpace = value; } 
         }
 
-        private int test;
-        [DataMember(Order = 1)]
-        public int test_
+        private string strTest;
+        [DataMember(Order = 2)]
+        public string strTest_
         {
-            get { return test; }
-            set { test = value; }
+            get { return strTest; }
+            set { strTest = value; }
+        }
+
+        public Indent()
+        {
+            length_ = -1;
+            useSpace_ = false;
+            strTest_ = "default Indent test string";
         }
     }
 }
