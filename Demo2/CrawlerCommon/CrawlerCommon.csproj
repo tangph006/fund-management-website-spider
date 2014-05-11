@@ -44,6 +44,9 @@
   <ItemGroup>
     <Compile Include="CrawlerFileEntity.cs" />
     <Compile Include="CrawlerCommon.cs" />
+    <Compile Include="CrawlerUri.cs" />
+    <Compile Include="CrawlerWebRequest.cs" />
+    <Compile Include="CrawlerWebResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

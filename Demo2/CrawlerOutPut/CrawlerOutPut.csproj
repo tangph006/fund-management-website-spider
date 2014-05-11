@@ -43,6 +43,15 @@
     <Compile Include="CrawlerOutput.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrawlerCommon\CrawlerCommon.csproj">
+      <Project>{800CF1D0-F143-42FA-A0F8-79E54A747E3A}</Project>
+      <Name>CrawlerCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

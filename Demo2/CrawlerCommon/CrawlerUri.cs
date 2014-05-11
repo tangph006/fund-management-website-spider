@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Engine
+namespace CrawlerCommon
 {
-    public class MyUri : System.Uri
+    public class CrawlerUri : System.Uri
     {
         // parsing depth limit
         private int nDepth;
@@ -31,6 +31,6 @@ namespace Engine
             set { strDomain = value; }
         }
 
-        public MyUri(string uriString) : base(uriString) { }
+        public CrawlerUri(string uriString) : base(uriString) { }
     }
 }

@@ -11,147 +11,88 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Net;
 using System.Net.Sockets;
+using CrawlerCommon;
 
 namespace Output
 {
     public class CrawlerOutput
-    {		
-        // thread that take the browse editor text to parse it
-        private Thread threadParse;
+    {
+        // unique Uri's queue
+        private Queue queueUrls;
+        public Queue queueUrls_
+        {
+            get { return queueUrls; }
+            set { queueUrls = value; }
+        }
+
         // binary tree to keep unique Uri's
         private SortTree urlStorage;
-        // Performance Counter to measure CPU usage
-        private System.Diagnostics.PerformanceCounter cpuCounter;
-        // Performance Counter to measure memory usage
-        private System.Diagnostics.PerformanceCounter ramCounter;
+        public SortTree urlStorage_;
+    {
 
-        // number of bytes downloaded
-        private int nByteCount;
-        public int ByteCount
+    }
+
+
+        // pop uri from the queue
+        public CrawlerUri DequeueUri()
         {
-            get { return nByteCount; }
-            set
+            Monitor.Enter(queueUrls_);
+            CrawlerUri uri = null;
+            try
             {
-                nByteCount = value;
-                this.statusBarPanelByteCount.Text = Commas(nByteCount / 1024 + 1) + " KB";
+                uri = (CrawlerUri)queueUrls_.Dequeue();
             }
+            catch (Exception)
+            {
+            }
+            return uri;
         }
 
-        // number of errors during the download process
-        private int nErrorCount;
-        public int ErrorCount
+        // push uri to the queue
+        bool EnqueueUri(CrawlerUri uri, bool bCheckRepetition)
         {
-            get { return nErrorCount; }
-            set
+            // add the uri to the binary tree to check if it is duplicated or not
+            if (bCheckRepetition == true && AddURL(ref uri) == false)
+                return false;
+
+            Monitor.Enter(queueUrls_);
+            try
             {
-                nErrorCount = value;
-                this.statusBarPanelErrors.Text = Commas(nErrorCount) + " errors";
+                // add the uri to the queue
+                queueUrls_.Enqueue(uri);
             }
+            catch (Exception)
+            {
+            }
+            Monitor.Exit(queueUrls_);
+
+            return true;
         }
 
-        // number of Uri's found
-        private int nURLCount;
-        public int URLCount
+        // add URL 
+        bool AddURL(ref CrawlerUri uri)
         {
-            get { return nURLCount; }
-            set
+            foreach (string str in settingT.ExcludeHosts)
             {
-                nURLCount = value;
-                this.statusBarPanelURLs.Text = Commas(nURLCount) + " URL found";
-            }
-        }
-
-        // available memory
-        private float nFreeMemory;
-        public float FreeMemory
-        {
-            get { return nFreeMemory; }
-            set
-            {
-                nFreeMemory = value;
-                this.statusBarPanelMem.Text = nFreeMemory + " Mb Available";
-            }
-        }
-
-        // CPU usage
-        private int nCPUUsage;
-        public int CPUUsage
-        {
-            get { return nCPUUsage; }
-            set
-            {
-                nCPUUsage = value;
-                this.statusBarPanelCPU.Text = "CPU usage " + nCPUUsage + "%";
-
-                Icon icon = Icon.FromHandle(((Bitmap)imageListPercentage.Images[value / 10]).GetHicon());
-                this.statusBarPanelCPU.Icon = icon;
-            }
-        }
-
-        // number of files downloaded
-        private int nFileCount;
-        public int FileCount
-        {
-            get { return nFileCount; }
-            set
-            {
-                nFileCount = value;
-                this.statusBarPanelFiles.Text = Commas(nFileCount) + " file(s) downloaded";
-            }
-        }
-
-        // threads array
-        private Thread[] threadsRun;
-
-        // number of running threads
-        private int nThreadCount;
-        public int ThreadCount
-        {
-            get { return nThreadCount; }
-            set
-            {
-                Monitor.Enter(this.listViewThreads);
-                try
+                if (str.Trim().Length > 0 && uri.Host.ToLower().IndexOf(str.Trim()) != -1)
                 {
-                    for (int nIndex = 0; nIndex < value; nIndex++)
-                    {
-                        // check if thread not created or not suspended
-                        if (threadsRun[nIndex] == null || threadsRun[nIndex].ThreadState != ThreadState.Suspended)
-                        {
-                            // create new thread
-                            threadsRun[nIndex] = new Thread(new ThreadStart(ThreadRunFunction));
-                            // set thread name equal to its index
-                            threadsRun[nIndex].Name = nIndex.ToString();
-                            // start thread working function
-                            threadsRun[nIndex].Start();
-                            // check if thread doesn't added to the view
-                            if (nIndex == this.listViewThreads.Items.Count)
-                            {
-                                // add a new line in the view for the new thread
-                                ListViewItem item = this.listViewThreads.Items.Add((nIndex + 1).ToString(), 0);
-                                string[] subItems = { "", "", "", "0", "0%" };
-                                item.SubItems.AddRange(subItems);
-                            }
-                        }
-                        // check if the thread is suspended
-                        else if (threadsRun[nIndex].ThreadState == ThreadState.Suspended)
-                        {
-                            // get thread item from the list
-                            ListViewItem item = this.listViewThreads.Items[nIndex];
-                            item.ImageIndex = 1;
-                            item.SubItems[2].Text = "Resume";
-                            // resume the thread
-                            threadsRun[nIndex].Resume();
-                        }
-                    }
-                    // change thread value
-                    nThreadCount = value;
+                    LogError(uri.AbsoluteUri, "\r\nHost excluded as it includes reserved pattern (" + str + ")");
+                    return false;
                 }
-                catch (Exception)
-                {
-                }
-                Monitor.Exit(this.listViewThreads);
             }
+            Monitor.Enter(urlStorage);
+            bool bNew = false;
+            try
+            {
+                string strURL = uri.AbsoluteUri;
+                bNew = urlStorage.Add(ref strURL).Count == 1;
+            }
+            catch (Exception)
+            {
+            }
+            Monitor.Exit(urlStorage);
+
+            return bNew;
         }
     }
 }
