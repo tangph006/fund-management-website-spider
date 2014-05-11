@@ -36,24 +36,35 @@
                      HorizontalAlignment="Stretch"  
                      VerticalAlignment="Top">
             <ToolBar Height="auto" HorizontalAlignment="Left" Name="toolBar1" VerticalAlignment="Top">
-                <Button Padding="3">resume</Button>
-                <Button Padding="3">pause</Button>
-                <Button Padding="3">stop</Button>
-                <Button Padding="3">restart</Button>
-                <Button Padding="3">clear</Button>
+                <Button>
+                    <Image Source="D:\CSharp\FundManagement\Demo2\CrawlerUI\Res\run.png"></Image>
+                </Button>
+                <Button>
+                    <Image Source="D:\CSharp\FundManagement\Demo2\CrawlerUI\Res\pause.png"></Image>
+                </Button>
+                <Button>
+                    <Image Source="D:\CSharp\FundManagement\Demo2\CrawlerUI\Res\stop.png"></Image>
+                </Button>
+                <Button>
+                    <Image Source="D:\CSharp\FundManagement\Demo2\CrawlerUI\Res\run.png"></Image>
+                </Button>
+                <Button>
+                    <Image Source="D:\CSharp\FundManagement\Demo2\CrawlerUI\Res\run.png"></Image>
+                </Button>
             </ToolBar>
         </ToolBarTray>
         <DockPanel Name="gridInput" 
               Grid.Row="2"
               HorizontalAlignment="Stretch"
               Height="auto">
-            <Button Name="buttonBrowse" DockPanel.Dock="Left" Margin="10,3,5,3" Width="50">Browse</Button>
-            <Button Name="buttonRun" DockPanel.Dock="Right" Margin="5,3,10,3" Width="50">Run</Button>
+            <Button Name="buttonBrowse" DockPanel.Dock="Left" Margin="10,5,5,3" Width="50">Browse</Button>
+            <Button Name="buttonRun" DockPanel.Dock="Right" Margin="5,5,10,3" Width="50">Run</Button>
             <ComboBox Name="comboBoxUrl" 
                       DockPanel.Dock="Left" 
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Center"
-                      Margin="20,3,5,3">
+                      Margin="20,5,5,3"
+                      IsEditable="True">
             </ComboBox>
         </DockPanel>
         <DockPanel Grid.Row="4">
