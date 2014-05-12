@@ -26,11 +26,12 @@ namespace Output
         }
 
         // binary tree to keep unique Uri's
-        private SortTree urlStorage;
-        public SortTree urlStorage_;
-    {
-
-    }
+        private CrawlerSortTree urlStorage;
+        public CrawlerSortTree urlStorage_
+        {
+            get { return urlStorage; }
+            set { urlStorage = value; }
+        }
 
 
         // pop uri from the queue
@@ -49,7 +50,7 @@ namespace Output
         }
 
         // push uri to the queue
-        bool EnqueueUri(CrawlerUri uri, bool bCheckRepetition)
+        public bool EnqueueUri(CrawlerUri uri, bool bCheckRepetition)
         {
             // add the uri to the binary tree to check if it is duplicated or not
             if (bCheckRepetition == true && AddURL(ref uri) == false)
@@ -70,16 +71,16 @@ namespace Output
         }
 
         // add URL 
-        bool AddURL(ref CrawlerUri uri)
+        public bool AddURL(ref CrawlerUri uri)
         {
-            foreach (string str in settingT.ExcludeHosts)
-            {
-                if (str.Trim().Length > 0 && uri.Host.ToLower().IndexOf(str.Trim()) != -1)
-                {
-                    LogError(uri.AbsoluteUri, "\r\nHost excluded as it includes reserved pattern (" + str + ")");
-                    return false;
-                }
-            }
+//             foreach (string str in settingT.ExcludeHosts)
+//             {
+//                 if (str.Trim().Length > 0 && uri.Host.ToLower().IndexOf(str.Trim()) != -1)
+//                 {
+//                     LogError(uri.AbsoluteUri, "\r\nHost excluded as it includes reserved pattern (" + str + ")");
+//                     return false;
+//                 }
+//             }
             Monitor.Enter(urlStorage);
             bool bNew = false;
             try
