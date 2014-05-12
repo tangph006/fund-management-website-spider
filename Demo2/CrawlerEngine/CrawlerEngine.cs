@@ -89,7 +89,7 @@ namespace Engine
         }
 
         // begin download and parse web site
-        public int RunCrawl() 
+        public int RunCrawling() 
         {
             return 0;
         }
@@ -144,9 +144,9 @@ namespace Engine
             try
             {
                 // create web request
-                request = MyWebRequest.Create(uri, request, KeepAlive);
+                request = MyWebRequest.Create(uri, request, crawlerSettings_.keepAlive_);
                 // set request timeout
-                request.Timeout = RequestTimeout * 1000;
+                request.Timeout = crawlerSettings_.requestTimeout_ * 1000;
                 // retrieve response from web request
                 MyWebResponse response = request.GetResponse();
                 // update status text with the request and response headers
@@ -156,7 +156,7 @@ namespace Engine
                 if (response.ResponseUri.Equals(uri) == false)
                 {
                     // add the new uri to the queue
-                    this.EnqueueUri(new CrawlerUri(response.ResponseUri.AbsoluteUri), true);
+                    crawlerOutput_.EnqueueUri(new CrawlerUri(response.ResponseUri.AbsoluteUri), true);
                     // update status
                     strStatus += "Redirected to: " + response.ResponseUri + "\r\n";
                     // log current uri status

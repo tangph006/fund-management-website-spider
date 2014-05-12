@@ -6,7 +6,7 @@ using System.IO;
 
 namespace CrawlerCommon
 {
-    public class CrawlerCommon
+    public class CrawlerCommons
     {
         public static void WriteDataString(StreamWriter sWriter, string strData)
         {
