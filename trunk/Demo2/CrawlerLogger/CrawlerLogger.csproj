@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{800CF1D0-F143-42FA-A0F8-79E54A747E3A}</ProjectGuid>
+    <ProjectGuid>{FA6AAB27-CF6C-46B2-8FC7-B813E1BA9ED3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CrawlerCommon</RootNamespace>
-    <AssemblyName>CrawlerCommon</AssemblyName>
+    <RootNamespace>CrawlerLogger</RootNamespace>
+    <AssemblyName>CrawlerLogger</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -21,8 +21,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,9 +31,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net">
+      <HintPath>..\CrawlerReferences\log4net.2.0.3(net40-full)\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,14 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CrawlerFileEntity.cs" />
-    <Compile Include="CrawlerCommon.cs" />
-    <Compile Include="CrawlerHashTree.cs" />
-    <Compile Include="CrawlerUri.cs" />
-    <Compile Include="CrawlerWebRequest.cs" />
-    <Compile Include="CrawlerWebResponse.cs" />
+    <Compile Include="CrawlerLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CrawlerSortTree.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

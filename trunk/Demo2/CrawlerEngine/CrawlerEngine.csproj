@@ -21,7 +21,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Bin\Debug\Engine.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -52,6 +53,10 @@
     <ProjectReference Include="..\CrawlerInput\CrawlerInput.csproj">
       <Project>{579D0A28-7AC0-48BA-85E4-2B4812B03B48}</Project>
       <Name>CrawlerInput</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CrawlerLogger\CrawlerLogger.csproj">
+      <Project>{FA6AAB27-CF6C-46B2-8FC7-B813E1BA9ED3}</Project>
+      <Name>CrawlerLogger</Name>
     </ProjectReference>
     <ProjectReference Include="..\CrawlerOutPut\CrawlerOutPut.csproj">
       <Project>{FD075259-A9CF-43C5-AA68-BEC45B1677D1}</Project>
