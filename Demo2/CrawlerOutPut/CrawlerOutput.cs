@@ -33,6 +33,29 @@ namespace Output
             set { urlStorage = value; }
         }
 
+        // downloaded file count
+        private long fileCount;
+        public long fileCount_
+        {
+            get { return fileCount; }
+            set { fileCount = value; }
+        }
+
+        // downloaded file data byte count
+        private long byteCount;
+        public long byteCount_
+        {
+            get { return byteCount; }
+            set { byteCount = value; }
+        }
+
+        // downloaded URL count
+        private long URLCount;
+        public long URLCount_
+        {
+            get { return URLCount; }
+            set { URLCount = value; }
+        }
 
         // pop uri from the queue
         public CrawlerUri DequeueUri()
@@ -73,14 +96,6 @@ namespace Output
         // add URL 
         public bool AddURL(ref CrawlerUri uri)
         {
-//             foreach (string str in settingT.ExcludeHosts)
-//             {
-//                 if (str.Trim().Length > 0 && uri.Host.ToLower().IndexOf(str.Trim()) != -1)
-//                 {
-//                     LogError(uri.AbsoluteUri, "\r\nHost excluded as it includes reserved pattern (" + str + ")");
-//                     return false;
-//                 }
-//             }
             Monitor.Enter(urlStorage);
             bool bNew = false;
             try

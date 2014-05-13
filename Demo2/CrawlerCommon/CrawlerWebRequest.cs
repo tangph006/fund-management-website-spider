@@ -2,53 +2,54 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Net;
 
 namespace CrawlerCommon
 {
-    public class MyWebRequest
+    public class CrawlerWebRequest
     {
-        public int Timeout;
-        public WebHeaderCollection Headers;
-        public string Header;
-        public Uri RequestUri;
-        public string Method;
-        public MyWebResponse response;
-        public bool KeepAlive;
-        public MyWebRequest(Uri uri, bool bKeepAlive)
+        public int timeOut_;
+        public WebHeaderCollection headers_;
+        public string header_;
+        public Uri requestUri_;
+        public string methodName_;
+        public CrawlerWebResponse response_;
+        public bool keepAlive_;
+        public CrawlerWebRequest(Uri uri, bool bKeepAlive)
         {
-            Headers = new WebHeaderCollection();
-            RequestUri = uri;
-            Headers["Host"] = uri.Host;
-            KeepAlive = bKeepAlive;
-            if (KeepAlive)
-                Headers["Connection"] = "Keep-Alive";
-            Method = "GET";
+            headers_ = new WebHeaderCollection();
+            requestUri_ = uri;
+            headers_["Host"] = uri.Host;
+            keepAlive_ = bKeepAlive;
+            if (keepAlive_)
+                headers_["Connection"] = "Keep-Alive";
+            methodName_ = "GET";
         }
-        public static MyWebRequest Create(Uri uri, MyWebRequest AliveRequest, bool bKeepAlive)
+        public static CrawlerWebRequest Create(Uri uri, CrawlerWebRequest AliveRequest, bool bKeepAlive)
         {
             if (bKeepAlive &&
                 AliveRequest != null &&
-                AliveRequest.response != null &&
-                AliveRequest.response.KeepAlive &&
-                AliveRequest.response.socket.Connected &&
-                AliveRequest.RequestUri.Host == uri.Host)
+                AliveRequest.response_ != null &&
+                AliveRequest.response_.keepAlive_ &&
+                AliveRequest.response_.socket_.Connected &&
+                AliveRequest.requestUri_.Host == uri.Host)
             {
-                AliveRequest.RequestUri = uri;
+                AliveRequest.requestUri_ = uri;
                 return AliveRequest;
             }
-            return new MyWebRequest(uri, bKeepAlive);
+            return new CrawlerWebRequest(uri, bKeepAlive);
         }
-        public MyWebResponse GetResponse()
+        public CrawlerWebResponse GetResponse()
         {
-            if (response == null || response.socket == null || response.socket.Connected == false)
+            if (response_ == null || response_.socket_ == null || response_.socket_.Connected == false)
             {
-                response = new MyWebResponse();
-                response.Connect(this);
-                response.SetTimeout(Timeout);
+                response_ = new CrawlerWebResponse();
+                response_.Connect(this);
+                response_.SetTimeout(timeOut_);
             }
-            response.SendRequest(this);
-            response.ReceiveHeader();
-            return response;
+            response_.SendRequest(this);
+            response_.ReceiveHeader();
+            return response_;
         }
     }
 

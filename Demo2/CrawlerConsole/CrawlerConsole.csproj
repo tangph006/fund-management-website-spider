@@ -24,7 +24,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Bin\Debug\CrawlerConsole.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -49,8 +50,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CrawlerConsoleMain.cs" />
+    <Compile Include="CrawlerConsole.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrawlerCommon\CrawlerCommon.csproj">
+      <Project>{800CF1D0-F143-42FA-A0F8-79E54A747E3A}</Project>
+      <Name>CrawlerCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CrawlerEngine\CrawlerEngine.csproj">
+      <Project>{A7E4B9BE-1A2C-4E42-8992-153F1306551F}</Project>
+      <Name>CrawlerEngine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CrawlerInput\CrawlerInput.csproj">
+      <Project>{579D0A28-7AC0-48BA-85E4-2B4812B03B48}</Project>
+      <Name>CrawlerInput</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CrawlerLogger\CrawlerLogger.csproj">
+      <Project>{FA6AAB27-CF6C-46B2-8FC7-B813E1BA9ED3}</Project>
+      <Name>CrawlerLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CrawlerOutPut\CrawlerOutPut.csproj">
+      <Project>{FD075259-A9CF-43C5-AA68-BEC45B1677D1}</Project>
+      <Name>CrawlerOutPut</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CrawlerSettings\CrawlerSettings.csproj">
+      <Project>{160E06B7-BD81-4DD5-9F73-21391095ED92}</Project>
+      <Name>CrawlerSettings</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
