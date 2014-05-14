@@ -73,10 +73,22 @@ namespace CrawlerCommon
             }
         }
 
-        // read from file
+        // read from file, this function will read data from filePath_
         public void ReadFromFile()
         {
             var fStream = new FileStream(filePath_, FileMode.Open);
+            StreamReader sReader = new StreamReader(fStream);
+            string jsonString = sReader.ReadToEnd();
+            sReader.Close();
+            fStream.Close();
+
+            FromJsonString(jsonString);
+        }
+
+        // read from file, read from input strPath
+        public void ReadFromFile(string strPath)
+        {
+            var fStream = new FileStream(strPath, FileMode.Open);
             StreamReader sReader = new StreamReader(fStream);
             string jsonString = sReader.ReadToEnd();
             sReader.Close();
