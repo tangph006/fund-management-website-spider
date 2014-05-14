@@ -31,6 +31,14 @@ namespace CrawlerCommon
             set { domain = value; }
         }
 
+        // normalize the url string
+        public static void Normalize(ref string strURL)
+        {
+            if (strURL.StartsWith("http://") == false)
+                strURL = "http://" + strURL;
+            if (strURL.IndexOf("/", 8) == -1)
+                strURL += '/';
+        }
         public CrawlerUri(string uriString) : base(uriString) { }
     }
 }

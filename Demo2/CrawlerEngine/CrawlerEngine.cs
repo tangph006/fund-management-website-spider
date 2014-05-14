@@ -24,17 +24,14 @@ namespace Engine
         public CrawlerInput crawlerInput_ { get; set; }
         public CrawlerOutput crawlerOutput_ { get; set; }
 
-        // flag to be used to stop all running threads when user request to stop
-        public bool ThreadsRunning { get; set; }
-
         // threads array
-        private Thread[] threadsRun_;
+        private Thread[] threadsRunning;
 
         // number of running threads
-        private int threadCount;
-        public int threadCount_
+        private int threadsCount;
+        public int threadsCount_
         {
-            get { return threadCount; }
+            get { return threadsCount; }
             set
             {
                 try
@@ -42,21 +39,22 @@ namespace Engine
                     for (int nIndex = 0; nIndex < value; nIndex++)
                     {
                         // check if thread not created or not suspended
-                        if (threadsRun_[nIndex] == null || threadsRun_[nIndex].ThreadState != ThreadState.Suspended)
+                        if (threadsRunning[nIndex] == null || threadsRunning[nIndex].ThreadState != ThreadState.Suspended)
                         {
                             // create new thread
-                            threadsRun_[nIndex] = new Thread(new ThreadStart(ThreadRunFunction));
+                            threadsRunning[nIndex] = new Thread(new ThreadStart(ThreadRunFunction));
                             // set thread name equal to its index
-                            threadsRun_[nIndex].Name = nIndex.ToString();
+                            threadsRunning[nIndex].Name = nIndex.ToString();
                             // start thread working function
-                            threadsRun_[nIndex].Start();
+                            threadsRunning[nIndex].Start();
                         }
                     }
                     // change thread value
-                    threadCount = value;
+                    threadsCount = value;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    string errMsg = ex.Message;
                 }
             }
         }
@@ -67,12 +65,22 @@ namespace Engine
             this.crawlerSettings_ = cSetting;
             this.crawlerInput_ = cInput;
             this.crawlerOutput_ = cOutput;
-            this.threadsRun_ = null;
+
+            this.threadsRunning = new Thread[20];
         }
 
         // begin download and parse web site
         public int RunCrawling() 
         {
+            string fullUrl = crawlerInput_.fullUrl_;
+            CrawlerUri.Normalize(ref fullUrl);
+            crawlerOutput_.EnqueueUri(new CrawlerUri(fullUrl), true);
+            threadsCount_ = crawlerSettings_.threadsCount_;
+            while (true)
+            {
+                int i = 100;
+                i++;
+            }
             return 0;
         }
 
@@ -97,7 +105,7 @@ namespace Engine
         void ThreadRunFunction()
         {
             CrawlerWebRequest request = null;
-            while (ThreadsRunning && int.Parse(Thread.CurrentThread.Name) < this.threadCount)
+            while (/*threadsRunning && */int.Parse(Thread.CurrentThread.Name) < this.threadsCount)
             {
                 CrawlerUri uri = crawlerOutput_.DequeueUri();
                 if (uri != null)
@@ -245,9 +253,9 @@ namespace Engine
                 // increment total bytes count
                 crawlerOutput_.byteCount_ += nTotalBytes;
 
-                if (ThreadsRunning == true 
-                    && bParse == true 
-                    && uri.Depth < crawlerSettings_.webDepth_)
+                if (/*ThreadsRunning == true && */
+                    bParse == true && 
+                    uri.Depth < crawlerSettings_.webDepth_)
                 {
                     // check for restricted words
                     foreach (string strExcludeWord in crawlerSettings_.excludeWords_)
@@ -270,7 +278,7 @@ namespace Engine
                         {
                             if (strRef.IndexOf("..") != -1 || strRef.StartsWith("/") == true || strRef.StartsWith("http://") == false)
                                 strRef = new Uri(uri, strRef).AbsoluteUri;
-                            Normalize(ref strRef);
+                            CrawlerUri.Normalize(ref strRef);
                             CrawlerUri newUri = new CrawlerUri(strRef);
                             if (newUri.Scheme != Uri.UriSchemeHttp && newUri.Scheme != Uri.UriSchemeHttps)
                                 continue;
@@ -292,15 +300,6 @@ namespace Engine
             finally
             {
             }
-        }
-
-        // normalize the url string
-        private void Normalize(ref string strURL)
-        {
-            if (strURL.StartsWith("http://") == false)
-                strURL = "http://" + strURL;
-            if (strURL.IndexOf("/", 8) == -1)
-                strURL += '/';
         }
     }
 }

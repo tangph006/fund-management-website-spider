@@ -57,6 +57,14 @@ namespace Output
             set { URLCount = value; }
         }
 
+        public CrawlerOutput()
+        {
+            queueUrls_ = new Queue();
+            urlStorage_ = new CrawlerSortTree();
+            fileCount_ = 0;
+            byteCount_ = 0;
+        }
+
         // pop uri from the queue
         public CrawlerUri DequeueUri()
         {

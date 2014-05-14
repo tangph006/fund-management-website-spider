@@ -143,6 +143,15 @@ namespace Settings
             }
         }
 
+        // set the threads count when engine is running
+        [DataMember(Order = 14)]
+        private int threadsCount;
+        public int threadsCount_
+        {
+            get { return threadsCount; }
+            set { threadsCount = value; }
+        }
+
         // default constructor
         public CrawlerSettings()
         {
