@@ -2,81 +2,78 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Text.RegularExpressions;
+using System.Text;
+using System.Runtime.Serialization.Json;
 
 namespace CrawlerCommon
 {
 	/// <summary>
 	/// Summary description for SortTree.
 	/// </summary>
-	public class CrawlerSortTree
+	public class CrawlerBinaryTree<T>
 	{
-		public SortTreeNode Root;
-		public int Count;
-		public bool Modified;
+        public CrawlerBinaryTreeNode<T> root_;
+		public int count_;
+		public bool isModified_;
 
-		public CrawlerSortTree()
+		public CrawlerBinaryTree()
 		{
+            Clear();
 		}
 		public void Clear()
 		{
-			Root = null;
-			Count = 0;
-			Modified = false;
-		}
-		private SortTreeNode Add(string strText, int nCount, object Tag)
-		{
-			SortTreeNode node = Add(ref strText);
-			node.Count = nCount;
-			node.Tag = Tag;
-			return node;
+			root_ = null;
+			count_ = 0;
+			isModified_ = false;
 		}
 
-		public SortTreeNode Add(ref string str)
+        public CrawlerBinaryTreeNode<T> Add(T t)
 		{
-			SortTreeNode node;
-			if(Root == null)
+            CrawlerBinaryTreeNode<T> node;
+			if(root_ == null)
 			{
-				Root = new SortTreeNode();
-				node = Root;
+                root_ = new CrawlerBinaryTreeNode<T>(t, 0);
+				node = root_;
 			}
 			else	
 			{
-				node = Root;
+				node = root_;
 				while(true)
 				{
-					if(node.Text == str)
+					if(node.data_ == t)
 					{
-						node.Count++;
+						node.count_++;
 						return node;
 					}
-					if(node.Text.CompareTo(str) > 0)
-					{	// add the node at the small branch
-						if(node.Small == null)
+					if(node.data_ > t)
+					{	
+                        // add the node at the small branch
+						if(node.small_ == null)
 						{
-							node.Small = new SortTreeNode();
-							node.Small.Parent = node;
-							node = node.Small;
+                            node.small_ = new CrawlerBinaryTreeNode<T>(t);
+							node.small_.parent_ = node;
+							node = node.small_;
 							break;
 						}
-						node = node.Small;
+						node = node.small_;
 					}
 					else
 					{	// add the node at the great branch
-						if(node.Great == null)
+						if(node.great_ == null)
 						{
-							node.Great = new SortTreeNode();
-							node.Great.Parent = node;
-							node = node.Great;
+                            node.great_ = new CrawlerBinaryTreeNode<T>(t);
+							node.great_.parent_ = node;
+							node = node.great_;
 							break;
 						}
-						node = node.Great;
+						node = node.great_;
 					}
 				}	
 			}
-			node.Text = str;
-			node.ID = this.Count++;
-			node.Count++;
-			Modified = true;
+			node.nodeID_ = this.count_;
+            this.count_++;
+			node.count_++;
+			isModified_ = true;
 			
 			return node;
 		}
@@ -86,119 +83,100 @@ namespace CrawlerCommon
 			FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
 			StreamWriter writer = new StreamWriter(stream, code);
 			
-			BitArray bitArray = new BitArray(this.Count, false);
-			SortTreeNode node = this.Root;
-			int nCount = this.Count;
+			BitArray bitArray = new BitArray(this.count_, false);
+            CrawlerBinaryTreeNode<T> node = this.root_;
+			int nCount = this.count_;
 			while(nCount > 0)
 			{
-				if(node.Small != null && bitArray.Get(node.Small.ID) == false)
-					node = node.Small;
-				else	if(bitArray.Get(node.ID) == false)
+				if(node.small_ != null && bitArray.Get(node.small_.nodeID_) == false)
+					node = node.small_;
+				else if(bitArray.Get(node.nodeID_) == false)
 					OutNode(node, writer, bitArray, ref nCount);
-				else	if(node.Great != null && bitArray.Get(node.Great.ID) == false)
-					node = node.Great;
+                else if (node.great_ != null && bitArray.Get(node.great_.nodeID_) == false)
+					node = node.great_;
 				else
 				{
-					if(bitArray.Get(node.ID) == false)
+					if(bitArray.Get(node.nodeID_) == false)
 						OutNode(node, writer, bitArray, ref nCount);
-					node = node.Parent;
+					node = node.parent_;
 				}
 			}
 			writer.Close();
 			stream.Close();
 			
-			Modified = false;
+			isModified_ = false;
 		}
 
-// 		public void Open(string fileName, System.Text.Encoding code, ListView list)
-// 		{
-// 			FileStream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-// 			StreamReader reader = new StreamReader(stream, code);
-// 
-// 			SortTreeNode node = null;
-// 			int nTagCount = 0;
-// 			ArrayList array = new ArrayList();
-// 			string str;
-// 			while((str = reader.ReadLine()) != null)
-// 			{
-// 				string[] strCols = str.Split('\t');
-// 				for(int n = 0; n < strCols.Length; n++)
-// 				{
-// 					string strCol = strCols[n];
-// 					if(n == 0)
-// 					{
-// 						if(strCol != "")
-// 						{
-// 							node = new SortTreeNode();
-// 							node.Text = strCol;
-// 							array.Add(node);
-// 							nTagCount = 0;
-// 						}
-// 					}
-// 					else	if(n == 1)
-// 					{
-// 						try
-// 						{
-// 							if(strCol != "")
-// 								node.Count = int.Parse(strCol);
-// 						}
-// 						catch(Exception e)
-// 						{
-// 							MessageBox.Show(e.Message);
-// 						}
-// 					}
-// 					else
-// 					{
-// 						if(nTagCount++ > 0)
-// 							node.Tag += "\r\n";
-// 						node.Tag += strCol;
-// 					}
-// 				}
-// 			}
-// 			reader.Close();
-// 			stream.Close();
-// 
-// 			Random rand = new Random();
-// 			while(array.Count > 0)
-// 			{
-// 				int nIndex = rand.Next(array.Count);
-// 				node = (SortTreeNode)array[nIndex];
-// 				array.RemoveAt(nIndex);
-// 				node = this.Add(node.Text, node.Count, node.Tag);
-// 				if(list != null)
-// 				{
-// 					ListViewItem item = list.Items.Add((node.ID+1).ToString());
-// 					item.SubItems.Add(node.Text);
-// 					item.SubItems.Add(node.Count.ToString());
-// 					item.Tag = node;
-// 				}
-// 			}
-// 		}
-		
-		bool OutNode(SortTreeNode node, StreamWriter writer, BitArray bits, ref int nCount)
+        bool OutNode(CrawlerBinaryTreeNode<T> node, StreamWriter writer, BitArray bits, ref int nCount)
 		{
-			if(node == null || bits.Get(node.ID) == true)
+			if(node == null || bits.Get(node.nodeID_) == true)
 				return false;
-			string str = node.Text + '\t' + node.Count.ToString() + '\t';
-			if(node.Tag != null)
-				str += node.Tag.ToString().Replace("\r\n", "\r\n\t\t");
-			writer.WriteLine(str.TrimEnd('\t'));
+
+			writer.WriteLine(node.ToJsonString());
 			
-			bits.Set(node.ID, true);
+			bits.Set(node.nodeID_, true);
 			nCount--;
 			
 			return true;
 		}
 	}
-	public class SortTreeNode
-	{
-		public SortTreeNode Parent;
-		public SortTreeNode Small;
-		public SortTreeNode Great;
-		public string Text;
-		public int Count;
-		public int ID;
 
-		public object Tag;
+    public class CrawlerBinaryTreeNode<T> : CrawlerFileEntity
+	{
+        public CrawlerBinaryTreeNode<T> parent_;
+        public CrawlerBinaryTreeNode<T> small_;
+        public CrawlerBinaryTreeNode<T> great_;
+		public T data_;
+        public int count_;
+		public int nodeID_;
+
+        // default constructor, ensure that T override ">", "<", "="
+        public CrawlerBinaryTreeNode(T t, int nodeId = -1)
+        {
+            this.dataTypeName_ = "CrawlerBinaryTreeNode";
+            this.version_ = 1;
+            this.filePath_ = "CrawlerBinaryTreeNode.json";
+            data_ = t;
+            nodeID_ = nodeId;
+        }
+
+        // generate an instance from Json string
+        override public void FromJsonString(string jsonString)
+        {
+            var mStream = new MemoryStream(Encoding.Default.GetBytes(jsonString));
+            var serializer = new DataContractJsonSerializer(typeof(CrawlerBinaryTreeNode<T>));
+            CopyFrom((CrawlerBinaryTreeNode<T>)serializer.ReadObject(mStream));
+        }
+
+        // translate 'this' to Json string
+        override public string ToJsonString()
+        {
+            try
+            {
+                var serializer = new DataContractJsonSerializer(typeof(CrawlerBinaryTreeNode<T>));
+                var stream = new MemoryStream();
+                serializer.WriteObject(stream, this);
+                byte[] dataBytes = new byte[stream.Length];
+                stream.Position = 0;
+                stream.Read(dataBytes, 0, (int)stream.Length);
+                string jsonString = Encoding.UTF8.GetString(dataBytes);
+                return jsonString;
+            }
+            catch (System.Exception ex)
+            {
+                // TODO: error handling.
+                return "";
+            }
+        }
+
+        // copy from
+        public CrawlerBinaryTreeNode<T> CopyFrom(CrawlerBinaryTreeNode<T> other)
+        {
+            base.CopyFrom((CrawlerCommon.CrawlerFileEntity)other);
+            data_ = other.data_;
+            count_ = other.count_;
+            nodeID_ = other.nodeID_;
+            return this;
+        }
 	}
 }

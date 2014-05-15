@@ -24,8 +24,11 @@ namespace Engine
         public CrawlerInput crawlerInput_ { get; set; }
         public CrawlerOutput crawlerOutput_ { get; set; }
 
+        // unique Uri's queue
+        private Queue queueUrls_;
+
         // threads array
-        private Thread[] threadsRunning;
+        private Thread[] threadsRunning_;
 
         // number of running threads
         private int threadsCount;
@@ -34,29 +37,22 @@ namespace Engine
             get { return threadsCount; }
             set
             {
-                try
+                if (value > crawlerSettings_.maxThreadCount_)
                 {
-                    for (int nIndex = 0; nIndex < value; nIndex++)
-                    {
-                        // check if thread not created or not suspended
-                        if (threadsRunning[nIndex] == null || threadsRunning[nIndex].ThreadState != ThreadState.Suspended)
-                        {
-                            // create new thread
-                            threadsRunning[nIndex] = new Thread(new ThreadStart(ThreadRunFunction));
-                            // set thread name equal to its index
-                            threadsRunning[nIndex].Name = nIndex.ToString();
-                            // start thread working function
-                            threadsRunning[nIndex].Start();
-                        }
-                    }
-                    // change thread value
-                    threadsCount = value;
+                    // TODO log: thread count exceed, set to max.
+                    value = crawlerSettings_.maxThreadCount_;
                 }
-                catch (Exception ex)
-                {
-                    string errMsg = ex.Message;
-                }
+                // change thread value
+                threadsCount = value;
             }
+        }
+
+        // engine state
+        private EngineState state;
+        public EngineState state_
+        {
+            get { return state; }
+            set { state = value; }
         }
 
         // constructor
@@ -66,21 +62,53 @@ namespace Engine
             this.crawlerInput_ = cInput;
             this.crawlerOutput_ = cOutput;
 
-            this.threadsRunning = new Thread[20];
+            queueUrls_ = new Queue();
+            this.threadsRunning_ = new Thread[cSetting.maxThreadCount_];
+        }
+
+        // 
+        private void MyMethod()
+        {
+
         }
 
         // begin download and parse web site
         public int RunCrawling() 
         {
+            state_ = EngineState.engine_state_running;
             string fullUrl = crawlerInput_.fullUrl_;
             CrawlerUri.Normalize(ref fullUrl);
-            crawlerOutput_.EnqueueUri(new CrawlerUri(fullUrl), true);
+            CrawlerUri seedUri = new CrawlerUri(fullUrl);
+            EnqueueUri(seedUri, true);
+            crawlerInput_.fullUrl_ = fullUrl;
             threadsCount_ = crawlerSettings_.threadsCount_;
-            while (true)
+
+            //
+            //crawlerOutput_.AddURL(seedUri);
+
+            try
             {
-                int i = 100;
-                i++;
+                for (int nIndex = 0; nIndex < threadsCount_; nIndex++)
+                {
+                    // check if thread not created or not suspended
+                    if (threadsRunning_[nIndex] == null || threadsRunning_[nIndex].ThreadState != ThreadState.Suspended)
+                    {
+                        // create new thread
+                        threadsRunning_[nIndex] = new Thread(new ThreadStart(ThreadStartFunction));
+                        // set thread name equal to its index
+                        threadsRunning_[nIndex].Name = nIndex.ToString();
+                        // start thread working function
+                        threadsRunning_[nIndex].Start();
+                        // join
+                        threadsRunning_[nIndex].Join();
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+                string errMsg = ex.Message;
+            }
+
             return 0;
         }
 
@@ -102,17 +130,18 @@ namespace Engine
             return 0; 
         }
 
-        void ThreadRunFunction()
+        private void ThreadStartFunction()
         {
             CrawlerWebRequest request = null;
-            while (/*threadsRunning && */int.Parse(Thread.CurrentThread.Name) < this.threadsCount)
+            while ( state_ == EngineState.engine_state_running && 
+                    int.Parse(Thread.CurrentThread.Name) < this.threadsCount)
             {
-                CrawlerUri uri = crawlerOutput_.DequeueUri();
-                if (uri != null)
+                CrawlerUri uri = DequeueUri();
+                if (uri != null && uri.depth_ <= crawlerSettings_.maxDepth_)
                 {
+                    ParseUri(uri, ref request);
                     if (crawlerSettings_.sleepConnectTime_ > 0)
                         Thread.Sleep(crawlerSettings_.sleepConnectTime_ * 1000);
-                    ParseUri(uri, ref request);
                 }
                 else
                 {
@@ -122,7 +151,7 @@ namespace Engine
         }
 
 
-        void ParseUri(CrawlerUri uri, ref CrawlerWebRequest request)
+        private void ParseUri(CrawlerUri uri, ref CrawlerWebRequest request)
         {
             try
             {
@@ -137,57 +166,52 @@ namespace Engine
                 if (response.responseUri_.Equals(uri) == false)
                 {
                     // add the new uri to the queue
-                    crawlerOutput_.EnqueueUri(new CrawlerUri(response.responseUri_.AbsoluteUri), true);
+                    EnqueueUri(new CrawlerUri(response.responseUri_.AbsoluteUri), true);
                     request = null;
                     return;
                 }
 
                 // check for allowed MIME types
-                if (crawlerSettings_.allMIMETypes_ == false && 
-                    response.contentType_ != null &&
-                    crawlerSettings_.MIMETypes_.Length > 0)
+                if (crawlerSettings_.allowAllMIMETypes_ == false &&
+                    crawlerSettings_.allowedMIMETypes_.Length > 0 &&
+                    response.contentType_ != null)
                 {
+                    // sample response.contentType: text/html; charset=utf-8
                     string strContentType = response.contentType_.ToLower();
-                    int nExtIndex = strContentType.IndexOf(';');
-                    if (nExtIndex != -1)
-                        strContentType = strContentType.Substring(0, nExtIndex);
-                    if (strContentType.IndexOf('*') == -1 &&
-                        (nExtIndex = crawlerSettings_.MIMETypes_.IndexOf(strContentType)) == -1)
+                    int nIndex = strContentType.IndexOf(';');
+                    if (nIndex != -1)
+                        strContentType = strContentType.Substring(0, nIndex);
+
+                    nIndex = crawlerSettings_.allowedMIMETypes_.IndexOf(strContentType);
+                    if (strContentType.IndexOf('*') == -1 && nIndex == -1)
                     {
-                        //LogError(uri.AbsoluteUri, strStatus + "\r\nUnlisted Content-Type (" + strContentType + "), check settings.");
+                        // log: this MIME type is not listed.
                         request = null;
+                        uri.state_ = CrawlerUriParseState.uri_state_not_allowed_MIME_type; 
                         return;
                     }
 
                     // find numbers
-                    Match match = new Regex(@"\d+").Match(crawlerSettings_.MIMETypes_, nExtIndex);
+                    Match match = new Regex(@"\d+").Match(crawlerSettings_.allowedMIMETypes_, nIndex);
                     int nMin = int.Parse(match.Value) * 1024;
                     match = match.NextMatch();
                     int nMax = int.Parse(match.Value) * 1024;
                     if (nMin < nMax && (response.contentLength_ < nMin || response.contentLength_ > nMax))
                     {
-                        //LogError(uri.AbsoluteUri, strStatus + "\r\nContentLength limit error (" + response.contentLength_ + ")");
+                        // TODO: Content's length is not correct, minimize length is nMin, maximize length is nMax,
+                        // but content's length is response.contentLength_
                         request = null;
                         return;
                     }
                 }
 
-                // check for response extension
-                string[] ExtArray = { ".gif", ".jpg", ".css", ".zip", ".exe" };
-                bool bParse = true;
-                foreach (string ext in ExtArray)
-                {
-                    if (uri.AbsoluteUri.ToLower().EndsWith(ext) == true)
-                    {
-                        bParse = false;
-                        break;
-                    }
-                }
+                // check for excluded response file extension
+                bool shouldBeParsed = true;
                 foreach (string ext in crawlerSettings_.excludeFiles_)
                 {
                     if (ext.Trim().Length > 0 && uri.AbsoluteUri.ToLower().EndsWith(ext) == true)
                     {
-                        bParse = false;
+                        shouldBeParsed = false;
                         break;
                     }
                 }
@@ -220,20 +244,20 @@ namespace Engine
 
                 // receive response buffer
                 string strResponse = "";
-                byte[] RecvBuffer = new byte[4096];
+                byte[] recvBuffer = new byte[8192];
                 int nBytes, nTotalBytes = 0;
                 // loop to receive response buffer
-                while ((nBytes = response.socket_.Receive(RecvBuffer, 0, 4096, SocketFlags.None)) > 0)
+                while ((nBytes = response.socket_.Receive(recvBuffer, 0, 8192, SocketFlags.None)) > 0)
                 {
                     // increment total received bytes
                     nTotalBytes += nBytes;
                     // write received buffer to file
-                    bWriter.Write(RecvBuffer, 0, nBytes);
+                    bWriter.Write(recvBuffer, 0, nBytes);
                     // check if the uri type not binary to can be parsed for refs
-                    if (bParse == true)
+                    if (shouldBeParsed == true)
                     {
                         // add received buffer to response string
-                        strResponse += Encoding.ASCII.GetString(RecvBuffer, 0, nBytes);
+                        strResponse += Encoding.ASCII.GetString(recvBuffer, 0, nBytes);
                     }
                   // check if connection Keep-Alive to can break the loop if response completed
                     if (response.keepAlive_ && nTotalBytes >= response.contentLength_ && response.contentLength_ > 0)
@@ -253,9 +277,7 @@ namespace Engine
                 // increment total bytes count
                 crawlerOutput_.byteCount_ += nTotalBytes;
 
-                if (/*ThreadsRunning == true && */
-                    bParse == true && 
-                    uri.Depth < crawlerSettings_.webDepth_)
+                if (shouldBeParsed == true)
                 {
                     // check for restricted words
                     foreach (string strExcludeWord in crawlerSettings_.excludeWords_)
@@ -284,8 +306,8 @@ namespace Engine
                                 continue;
                             if (newUri.Host != uri.Host && crawlerSettings_.keepSameServer_ == true)
                                 continue;
-                            newUri.Depth = uri.Depth + 1;
-                            crawlerOutput_.EnqueueUri(newUri, true);
+                            newUri.depth_ = uri.depth_ + 1;
+                            EnqueueUri(newUri, true);
                         }
                         catch (Exception)
                         {
@@ -301,5 +323,57 @@ namespace Engine
             {
             }
         }
+
+        // pop uri from the queue
+        private CrawlerUri DequeueUri()
+        {
+            CrawlerUri uri = null;
+            Monitor.Enter(queueUrls_);
+            try
+            {
+                uri = (CrawlerUri)queueUrls_.Dequeue();
+            }
+            catch (Exception)
+            {
+            }
+            Monitor.Exit(queueUrls_);
+            return uri;
+        }
+
+        // push uri to the queue
+        private bool EnqueueUri(CrawlerUri uri, bool bCheckRepetition = true)
+        {
+            // add the uri to the binary tree to check if it is duplicated or not
+            if (bCheckRepetition == true && 
+                crawlerOutput_.FindCrawlerUri(uri) != -1) // this uri has been parsed.
+                return false;
+
+            Monitor.Enter(queueUrls_);
+            try
+            {
+                // add the uri to the queue
+                queueUrls_.Enqueue(uri);
+            }
+            catch (Exception)
+            {
+            }
+            Monitor.Exit(queueUrls_);
+
+            return true;
+        }
+
+        private string UrlStringToNormal(string strUrl)
+        {
+            strUrl.Replace("%20", " ");
+            return strUrl;
+        }
     }
+
+    public enum EngineState
+    {
+        engine_state_pause,
+        engine_state_running,
+        engine_state_stop,
+    }
+
 }

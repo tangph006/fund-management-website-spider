@@ -9,15 +9,15 @@ namespace CrawlerCommon
     {
         // parsing depth limit
         private int depth;
-        public int Depth
+        public int depth_
         {
             get { return depth; }
             set { depth = value; }
         }
 
-        // 0: not handled; 1: handle_successed; 2: handle_failed; 3: other
-        private int state;
-        public int state_
+        // the state of this Uri
+        private CrawlerUriParseState state;
+        public CrawlerUriParseState state_
         {
             get { return state; }
             set { state = value; }
@@ -39,6 +39,19 @@ namespace CrawlerCommon
             if (strURL.IndexOf("/", 8) == -1)
                 strURL += '/';
         }
-        public CrawlerUri(string uriString) : base(uriString) { }
+        public CrawlerUri(string uriString) : base(uriString) 
+        {
+            state_ = CrawlerUriParseState.uri_state_not_handled;
+            depth_ = 0; // default crawling depth is 1.
+        }
+    }
+
+    public enum CrawlerUriParseState
+    {
+        uri_state_not_handled,
+        uri_state_handled_succeed,
+        uri_state_handled_failed,
+        uri_state_not_allowed_MIME_type,
+        uri_state_other
     }
 }
