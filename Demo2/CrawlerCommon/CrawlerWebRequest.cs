@@ -48,7 +48,7 @@ namespace CrawlerCommon
                 response_.SetTimeout(timeOut_);
             }
             response_.SendRequest(this);
-            response_.ReceiveHeader();
+            response_.ReceiveAndParseHeader();
             return response_;
         }
     }

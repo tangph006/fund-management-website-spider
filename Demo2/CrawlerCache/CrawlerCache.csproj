@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{579D0A28-7AC0-48BA-85E4-2B4812B03B48}</ProjectGuid>
+    <ProjectGuid>{12E3D0D9-CBA0-4970-847F-04B609A7E9F1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CrawlerInput</RootNamespace>
-    <AssemblyName>CrawlerInput</AssemblyName>
+    <RootNamespace>CrawlerCache</RootNamespace>
+    <AssemblyName>CrawlerCache</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CrawlerInput.cs" />
+    <Compile Include="CrawlerCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

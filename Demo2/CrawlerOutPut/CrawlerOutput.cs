@@ -17,20 +17,12 @@ namespace Output
 {
     public class CrawlerOutput
     {
-        // unique Uri's queue
-        private Queue queueUrls;
-        public Queue queueUrls_
-        {
-            get { return queueUrls; }
-            set { queueUrls = value; }
-        }
-
         // binary tree to keep unique Uri's
-        private CrawlerSortTree urlStorage;
-        public CrawlerSortTree urlStorage_
+        private CrawlerBinaryTree<CrawlerUri> uriStorage;
+        public CrawlerBinaryTree<CrawlerUri> urlStorage_
         {
-            get { return urlStorage; }
-            set { urlStorage = value; }
+            get { return uriStorage; }
+            set { uriStorage = value; }
         }
 
         // downloaded file count
@@ -59,64 +51,32 @@ namespace Output
 
         public CrawlerOutput()
         {
-            queueUrls_ = new Queue();
-            urlStorage_ = new CrawlerSortTree();
+            urlStorage_ = new CrawlerBinaryTree<CrawlerUri>();
             fileCount_ = 0;
             byteCount_ = 0;
         }
 
-        // pop uri from the queue
-        public CrawlerUri DequeueUri()
+        // add Uri to the storage 
+        public bool AddUri(ref CrawlerUri uri)
         {
-            Monitor.Enter(queueUrls_);
-            CrawlerUri uri = null;
+            Monitor.Enter(uriStorage);
+            bool bRet = false;
             try
             {
-                uri = (CrawlerUri)queueUrls_.Dequeue();
+                uriStorage.Add(uri);
             }
             catch (Exception)
             {
             }
-            return uri;
+            Monitor.Exit(uriStorage);
+
+            return bRet;
         }
 
-        // push uri to the queue
-        public bool EnqueueUri(CrawlerUri uri, bool bCheckRepetition)
+        // find Uri from urlStorage
+        public int FindCrawlerUri(CrawlerUri uri)
         {
-            // add the uri to the binary tree to check if it is duplicated or not
-            if (bCheckRepetition == true && AddURL(ref uri) == false)
-                return false;
-
-            Monitor.Enter(queueUrls_);
-            try
-            {
-                // add the uri to the queue
-                queueUrls_.Enqueue(uri);
-            }
-            catch (Exception)
-            {
-            }
-            Monitor.Exit(queueUrls_);
-
-            return true;
-        }
-
-        // add URL 
-        public bool AddURL(ref CrawlerUri uri)
-        {
-            Monitor.Enter(urlStorage);
-            bool bNew = false;
-            try
-            {
-                string strURL = uri.AbsoluteUri;
-                bNew = urlStorage.Add(ref strURL).Count == 1;
-            }
-            catch (Exception)
-            {
-            }
-            Monitor.Exit(urlStorage);
-
-            return bNew;
+            return -1;
         }
     }
 }

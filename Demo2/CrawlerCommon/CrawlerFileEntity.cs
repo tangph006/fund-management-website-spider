@@ -61,7 +61,7 @@ namespace CrawlerCommon
             try
             {
                 FileStream fStream = new FileStream(filePath_, FileMode.OpenOrCreate);
-                fStream.Position = 0;
+                fStream.SetLength(0);
                 StreamWriter sWriter = new StreamWriter(fStream);
                 sWriter.Write(jsonString);
                 sWriter.Close();

@@ -13,11 +13,11 @@ namespace Settings
     {
 		// MIME types string
         [DataMember(Order = 0)]
-		private string MIMETypes;// = SettingLoader.GetMIMETypes();
-		public string MIMETypes_
+		private string allowedMIMETypes;
+		public string allowedMIMETypes_
 		{
-			get	{	return MIMETypes;	}
-			set	{	MIMETypes = value;	}
+			get	{	return allowedMIMETypes;	}
+			set	{	allowedMIMETypes = value;	}
 		}
 
 		// encoding text that includes all settings types in one string
@@ -29,7 +29,7 @@ namespace Settings
 			set	{	encoding = value;	}
 		}
 
-		// timeout of sockets send and receive
+		// timeout of sockets send and receive, second
         [DataMember(Order = 2)]
 		private int requestTimeout;
         public int requestTimeout_
@@ -95,21 +95,21 @@ namespace Settings
 
 		// represents the depth of navigation in the crawling process
         [DataMember(Order = 9)]
-		private int webDepth;
-        public int webDepth_
+        private int maxDepth;
+        public int maxDepth_
 		{
-            get { return webDepth; }
-            set { webDepth = value; }
+            get { return maxDepth; }
+            set { maxDepth = value; }
 		}
 
 		// MIME types are the types that are supported to be downloaded by the crawler 
 		// and the crawler includes a default types to be used. 
         [DataMember(Order = 10)]
-		private bool allMIMETypes;
-        public bool allMIMETypes_
+		private bool allowAllMIMETypes;
+        public bool allowAllMIMETypes_
 		{
-            get { return allMIMETypes; }
-            set { allMIMETypes = value; }
+            get { return allowAllMIMETypes; }
+            set { allowAllMIMETypes = value; }
 		}		
 
 		// to limit crawling process to the same host of the original URL
@@ -150,6 +150,15 @@ namespace Settings
         {
             get { return threadsCount; }
             set { threadsCount = value; }
+        }
+
+        // set the threads count when engine is running
+        [DataMember(Order = 15)]
+        private int maxThreadsCount;
+        public int maxThreadCount_
+        {
+            get { return maxThreadsCount; }
+            set { maxThreadsCount = value; }
         }
 
         // default constructor
@@ -193,7 +202,7 @@ namespace Settings
         public CrawlerSettings CopyFrom(CrawlerSettings other)
         {
             base.CopyFrom((CrawlerCommon.CrawlerFileEntity)other);
-            MIMETypes_ = other.MIMETypes_;
+            allowedMIMETypes_ = other.allowedMIMETypes_;
             encoding_ = other.encoding_;
             requestTimeout_ = other.requestTimeout_;
             sleepFetchTime_ = other.sleepFetchTime_;
@@ -202,7 +211,7 @@ namespace Settings
             excludeHosts_ = other.excludeHosts_;
             lastRequestCount_ = other.lastRequestCount_;
             sleepConnectTime_ = other.sleepConnectTime_;
-            webDepth_ = other.webDepth_;
+            maxDepth_ = other.maxDepth_;
             keepSameServer_ = other.keepSameServer_;
             keepAlive_ = other.keepAlive_;
             downloadfolder_ = other.downloadfolder_;

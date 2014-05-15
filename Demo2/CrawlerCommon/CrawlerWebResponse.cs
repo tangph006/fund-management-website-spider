@@ -40,7 +40,7 @@ namespace CrawlerCommon
             socket_.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, Timeout * 1000);
             socket_.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, Timeout * 1000);
         }
-        public void ReceiveHeader()
+        public void ReceiveAndParseHeader()
         {
             header_ = "";
             headers_ = new WebHeaderCollection();
