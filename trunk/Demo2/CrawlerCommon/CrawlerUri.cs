@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CrawlerCommon
 {
-    public class CrawlerUri : System.Uri
+    public class CrawlerUri : System.Uri , IComparable
     {
         // parsing depth limit
         private int depth;
@@ -43,6 +43,12 @@ namespace CrawlerCommon
         {
             state_ = CrawlerUriParseState.uri_state_not_handled;
             depth_ = 0; // default crawling depth is 1.
+        }
+
+        public int CompareTo(object obj)
+        {
+            CrawlerUri other = obj as CrawlerUri;
+            return this.AbsoluteUri.CompareTo(other.AbsoluteUri);
         }
     }
 

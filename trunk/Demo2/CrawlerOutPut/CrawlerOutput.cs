@@ -17,7 +17,7 @@ namespace Output
 {
     public class CrawlerOutput
     {
-        // binary tree to keep unique Uri's
+        // binary tree to keep Uris that parsed
         private CrawlerBinaryTree<CrawlerUri> uriStorage;
         public CrawlerBinaryTree<CrawlerUri> urlStorage_
         {
@@ -41,12 +41,12 @@ namespace Output
             set { byteCount = value; }
         }
 
-        // downloaded URL count
-        private long URLCount;
-        public long URLCount_
+        // downloaded Uri count
+        private long uriCount;
+        public long uriCount_
         {
-            get { return URLCount; }
-            set { URLCount = value; }
+            get { return uriCount; }
+            set { uriCount = value; }
         }
 
         public CrawlerOutput()
@@ -57,13 +57,14 @@ namespace Output
         }
 
         // add Uri to the storage 
-        public bool AddUri(ref CrawlerUri uri)
+        public bool AddUri(CrawlerUri uri)
         {
             Monitor.Enter(uriStorage);
             bool bRet = false;
             try
             {
-                uriStorage.Add(uri);
+                uriStorage.AddTreeNode(uri);
+                uriCount_++;
             }
             catch (Exception)
             {
@@ -74,9 +75,9 @@ namespace Output
         }
 
         // find Uri from urlStorage
-        public int FindCrawlerUri(CrawlerUri uri)
+        public CrawlerBinaryTreeNode<CrawlerUri> FindCrawlerUri(CrawlerUri uri)
         {
-            return -1;
+            return uriStorage.FindTreeNodeByData(uri);
         }
     }
 }
