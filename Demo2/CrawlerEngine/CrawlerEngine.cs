@@ -16,6 +16,7 @@ using Input;
 using Settings;
 using Output;
 using CrawlerCommon;
+
 namespace Engine
 {
     public class CrawlerEngine
@@ -83,8 +84,8 @@ namespace Engine
             crawlerInput_.fullUrl_ = fullUrl;
             threadsCount_ = crawlerSettings_.threadsCount_;
 
-            //
-            //crawlerOutput_.AddURL(seedUri);
+            System.Diagnostics.Debug.Assert(crawlerOutput_.FindCrawlerUri(seedUri) == null);
+            crawlerOutput_.AddUri(seedUri);
 
             try
             {
@@ -139,6 +140,10 @@ namespace Engine
                 CrawlerUri uri = DequeueUri();
                 if (uri != null && uri.depth_ <= crawlerSettings_.maxDepth_)
                 {
+                    if (crawlerOutput_.FindCrawlerUri(uri) != null) // this uri has been parsed.
+                    {
+                        continue; // do not parse it.
+                    }
                     ParseUri(uri, ref request);
                     if (crawlerSettings_.sleepConnectTime_ > 0)
                         Thread.Sleep(crawlerSettings_.sleepConnectTime_ * 1000);
@@ -292,7 +297,7 @@ namespace Engine
                     // parse the page to search for refs
                     string strRef = @"(href|HREF|src|SRC)[ ]*=[ ]*[""'][^""'#>]+[""']";
                     MatchCollection matches = new Regex(strRef).Matches(strResponse);
-                    crawlerOutput_.URLCount_ += matches.Count;
+                    crawlerOutput_.uriCount_ += matches.Count;
                     foreach (Match match in matches)
                     {
                         strRef = match.Value.Substring(match.Value.IndexOf('=') + 1).Trim('"', '\'', '#', ' ', '>');
@@ -343,10 +348,10 @@ namespace Engine
         // push uri to the queue
         private bool EnqueueUri(CrawlerUri uri, bool bCheckRepetition = true)
         {
-            // add the uri to the binary tree to check if it is duplicated or not
+            // check whether the uri has been parsed or not
             if (bCheckRepetition == true && 
-                crawlerOutput_.FindCrawlerUri(uri) != -1) // this uri has been parsed.
-                return false;
+                crawlerOutput_.FindCrawlerUri(uri) != null)
+                return false; // the uri has been parsed already, do not parse it again
 
             Monitor.Enter(queueUrls_);
             try
