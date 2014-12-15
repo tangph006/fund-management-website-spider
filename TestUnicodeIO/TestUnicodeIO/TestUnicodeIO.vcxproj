@@ -109,6 +109,7 @@
     <ClInclude Include="TabSubView2.h" />
     <ClInclude Include="TabSubView3.h" />
     <ClInclude Include="TabSubView4.h" />
+    <ClInclude Include="TabSubView5.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestUnicodeIO.h" />
     <ClInclude Include="TestUnicodeIODlg.h" />
@@ -122,6 +123,7 @@
     <ClCompile Include="TabSubView2.cpp" />
     <ClCompile Include="TabSubView3.cpp" />
     <ClCompile Include="TabSubView4.cpp" />
+    <ClCompile Include="TabSubView5.cpp" />
     <ClCompile Include="TestUnicodeIO.cpp" />
     <ClCompile Include="TestUnicodeIODlg.cpp" />
   </ItemGroup>
