@@ -4,6 +4,7 @@
 #include "TabSubView2.h"
 #include "TabSubView3.h"
 #include "TabSubView4.h"
+#include "TabSubView5.h"
 
 class CTestUnicodeIODlg : public CDialogEx
 {
@@ -14,8 +15,8 @@ protected:
     HICON m_hIcon;
     virtual BOOL OnInitDialog();
 
-    void LayoutTabViews();
-
+    void LayoutSubTabViews();
+    void HideTabSubViews();
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
     afx_msg void OnPaint();
@@ -30,6 +31,7 @@ protected:
     CTabSubView2 m_tabView2;
     CTabSubView3 m_tabView3;
     CTabSubView4 m_tabView4;
+    CTabSubView5 m_tabView5;
 private:
     int m_oldCx;
     int m_oldCy;

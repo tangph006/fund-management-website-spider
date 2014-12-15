@@ -42,12 +42,11 @@ BOOL CTestUnicodeIODlg::OnInitDialog()
     m_mainTab.InsertItem(1,_T("20141125"));
     m_mainTab.InsertItem(2,_T("20141126"));
     m_mainTab.InsertItem(3,_T("20141201"));
-    m_mainTab.SetCurSel(3);
-    m_tabView1.ShowWindow(FALSE);
-    m_tabView2.ShowWindow(FALSE);
-    m_tabView3.ShowWindow(FALSE);
-    m_tabView4.ShowWindow(TRUE);
-    LayoutTabViews();
+    m_mainTab.InsertItem(4,_T("20141205"));
+    LayoutSubTabViews();
+    HideTabSubViews();
+    m_mainTab.SetCurSel(4);
+    m_tabView5.ShowWindow(TRUE);
 
     return TRUE;
 }
@@ -91,40 +90,31 @@ int CTestUnicodeIODlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_tabView2.Create(IDD_TABSUBVIEW2,GetDlgItem(IDC_MAIN_TAB));
     m_tabView3.Create(IDD_TABSUBVIEW3,GetDlgItem(IDC_MAIN_TAB));
     m_tabView4.Create(IDD_TABSUBVIEW4,GetDlgItem(IDC_MAIN_TAB));
-
+    m_tabView5.Create(IDD_TABSUBVIEW5,GetDlgItem(IDC_MAIN_TAB));
     return 0;
 }
 
 
 void CTestUnicodeIODlg::OnTcnSelchangeMainTab(NMHDR *pNMHDR, LRESULT *pResult)
 {
+    HideTabSubViews();
     int CurSel = m_mainTab.GetCurSel();
-
     switch(CurSel)
     {
     case 0:
         m_tabView1.ShowWindow(TRUE);
-        m_tabView2.ShowWindow(FALSE);
-        m_tabView3.ShowWindow(FALSE);
-        m_tabView4.ShowWindow(FALSE);
         break;
     case 1:
-        m_tabView1.ShowWindow(FALSE);
         m_tabView2.ShowWindow(TRUE);
-        m_tabView3.ShowWindow(FALSE);
-        m_tabView4.ShowWindow(FALSE);
         break;
     case 2:
-        m_tabView1.ShowWindow(FALSE);
-        m_tabView2.ShowWindow(FALSE);
         m_tabView3.ShowWindow(TRUE);
-        m_tabView4.ShowWindow(FALSE);
         break;
     case 3:
-        m_tabView1.ShowWindow(FALSE);
-        m_tabView2.ShowWindow(FALSE);
-        m_tabView3.ShowWindow(FALSE);
         m_tabView4.ShowWindow(TRUE);
+        break;
+    case 4:
+        m_tabView5.ShowWindow(TRUE);
         break;
     default:
         break;
@@ -194,7 +184,7 @@ void CTestUnicodeIODlg::OnSize(UINT nType, int cx, int cy)
     LayoutControl(GetDlgItem(IDOK), BottomRight, BottomRight, cx, cy);
     LayoutControl(GetDlgItem(IDCANCEL), BottomRight, BottomRight, cx, cy);
     LayoutControl(&m_mainTab, TopLeft, BottomRight, cx, cy);
-    LayoutTabViews();
+    LayoutSubTabViews();
     if(nType != SIZE_MINIMIZED)
     {
         m_oldCx = cx;
@@ -203,18 +193,29 @@ void CTestUnicodeIODlg::OnSize(UINT nType, int cx, int cy)
     InvalidateRect(NULL);
 }
 
-void CTestUnicodeIODlg::LayoutTabViews()
+void CTestUnicodeIODlg::LayoutSubTabViews()
 {
-    CRect rTabClient;
-    m_mainTab.GetClientRect(&rTabClient);
-    rTabClient.top += 40;
-    rTabClient.left += 25;
-    rTabClient.bottom -= 5;
-    rTabClient.right -= 5;
-    m_tabView1.MoveWindow(&rTabClient);
-    m_tabView2.MoveWindow(&rTabClient);
-    m_tabView3.MoveWindow(&rTabClient);
-    m_tabView4.MoveWindow(&rTabClient);
+    CRect recTab;
+    m_mainTab.GetWindowRect(&recTab);
+    ScreenToClient(recTab);
+    recTab.top += 22;
+    recTab.left += 2;
+    recTab.bottom -= 2;
+    recTab.right -= 6;
+    m_tabView1.MoveWindow(&recTab);
+    m_tabView2.MoveWindow(&recTab);
+    m_tabView3.MoveWindow(&recTab);
+    m_tabView4.MoveWindow(&recTab);
+    m_tabView5.MoveWindow(&recTab);
+}
+
+void CTestUnicodeIODlg::HideTabSubViews()
+{
+    m_tabView1.ShowWindow(FALSE);
+    m_tabView2.ShowWindow(FALSE);
+    m_tabView3.ShowWindow(FALSE);
+    m_tabView4.ShowWindow(FALSE);
+    m_tabView5.ShowWindow(FALSE);
 }
 
 
