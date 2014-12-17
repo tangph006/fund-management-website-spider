@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="CTPDemo.cpp" />
+    <ClCompile Include="CTPDemoDlg.cpp" />
+    <ClCompile Include="FloatEdit.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="MyClass.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CTPDemo.h" />
+    <ClInclude Include="CTPDemoDlg.h" />
+    <ClInclude Include="FloatEdit.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiStruct.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcTraderApi.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiDataType.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CTPDemo.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\CTPDemo.ico" />
+    <None Include="res\CTPDemo.rc2" />
+    <None Include="res\toolbar1.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{e9ce515c-a7aa-4e08-b118-64c1d8e35330}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
