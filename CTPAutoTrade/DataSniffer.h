@@ -16,38 +16,38 @@
 #define EPSILON_E5 (float)(1E-3)
 
 
-extern	int		TickABS;
-extern	double  TickAPrice[4];		//
-extern	int		TickBNum;
-extern	double  TickBPrice[4];		//
-extern	bool	CloseAll;					//收盘标志
+extern int TickABS;
+extern double TickAPrice[4]; //
+extern int TickBNum;
+extern double TickBPrice[4]; //
+extern bool CloseAll; //收盘标志
 
- 
-void Sniffer()	//监听Tick数据已经指标计算 实盘用
+
+void Sniffer() //监听Tick数据已经指标计算 实盘用
 {
 
-	if (RunMode && Q_BarTime_2>=0.1500 && CloseAll==false)
-	{	
-		cerr << "--->>> " <<TradingDay<<"准备收盘!" << endl;
-		cerr << "--->>> " <<"WriteConfiguration!" << endl;
-		WriteConfiguration("./AutoTrader.cfg");				//备份数据
-		Sleep(3000);
-		//ErasingTradeConfiguration();
-		cerr << "--->>> " <<TradingDay<<"收盘!" << endl;
-		CloseAll=true;
-	}
+    if (RunMode && Q_BarTime_2>=0.1500 && CloseAll==false)
+    { 
+        std::cerr << "--->>> " <<TradingDay<<"准备收盘!" << std::endl;
+        std::cerr << "--->>> " <<"WriteConfiguration!" << std::endl;
+        WriteConfiguration("./AutoTrader.cfg"); //备份数据
+        Sleep(3000);
+        //ErasingTradeConfiguration();
+        std::cerr << "--->>> " <<TradingDay<<"收盘!" << std::endl;
+        CloseAll=true;
+    }
 
-		if (TickAPrice[0]>TickAPrice[1] && TickAPrice[1]>TickAPrice[2] && TickAPrice[2]>TickAPrice[3])
-		{
-			TickABS=1;	//连续3个TICK涨，buy
-		}
-		else if (TickAPrice[0]<TickAPrice[1] && TickAPrice[1]<TickAPrice[2] && TickAPrice[2]<TickAPrice[3])
-		{
-			TickABS=2;	//连续3个TICK跌，Sell
-		}
-		else
-		{
-			TickABS=0;
-		}	
+    if (TickAPrice[0]>TickAPrice[1] && TickAPrice[1]>TickAPrice[2] && TickAPrice[2]>TickAPrice[3])
+    {
+        TickABS=1; //连续3个TICK涨，buy
+    }
+    else if (TickAPrice[0]<TickAPrice[1] && TickAPrice[1]<TickAPrice[2] && TickAPrice[2]<TickAPrice[3])
+    {
+        TickABS=2; //连续3个TICK跌，Sell
+    }
+    else
+    {
+        TickABS=0;
+    } 
 }
 
