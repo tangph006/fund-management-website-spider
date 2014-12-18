@@ -109,6 +109,7 @@
     <ClInclude Include="CTPDemo.h" />
     <ClInclude Include="CTPDemoDlg.h" />
     <ClInclude Include="FloatEdit.h" />
+    <ClInclude Include="MyTradeClass.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
