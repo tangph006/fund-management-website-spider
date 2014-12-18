@@ -176,7 +176,7 @@
     <ClInclude Include="ListCtrlReSizeColum.h" />
     <ClInclude Include="MemDC.h" />
     <ClInclude Include="MFCExControlAPI.h" />
-    <ClInclude Include="MySpin.h" />
+    <ClInclude Include="EditSpinWnd.h" />
     <ClInclude Include="NumericEdit.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SimpleToolTipListBox.h" />
@@ -241,7 +241,7 @@
     <ClCompile Include="ListCtrlExEx.cpp" />
     <ClCompile Include="ListCtrlReSizeColum.cpp" />
     <ClCompile Include="MFCExControl.cpp" />
-    <ClCompile Include="MySpin.cpp" />
+    <ClCompile Include="EditSpinWnd.cpp" />
     <ClCompile Include="NumericEdit.cpp" />
     <ClCompile Include="SimpleToolTipListBox.cpp" />
     <ClCompile Include="SmartEdit.cpp" />

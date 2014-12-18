@@ -1,5 +1,3 @@
-#include "MySpin.h"
-
 #ifndef XLISTCTRL_H
 #define XLISTCTRL_H
 
