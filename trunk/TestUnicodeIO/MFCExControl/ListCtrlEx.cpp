@@ -39,7 +39,8 @@ CListCtrlEx::~CListCtrlEx()
 
 BEGIN_MESSAGE_MAP(CListCtrlEx, CListCtrl)
 	ON_WM_HSCROLL()
-    ON_WM_VSCROLL()
+	ON_WM_VSCROLL()
+	ON_WM_LBUTTONDOWN()
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnNMCustomdraw)
     ON_NOTIFY_REFLECT_EX(LVN_ENDLABELEDIT, OnEndlabeledit)
     ON_NOTIFY_REFLECT_EX(LVN_ITEMCHANGED, OnLvnItemchanged)
@@ -234,6 +235,20 @@ BOOL CListCtrlEx::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 		SetItemText(plvItem->iItem, plvItem->iSubItem, plvItem->pszText);
 	*pResult = FALSE;
 	return FALSE;
+}
+
+void CListCtrlEx::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	SetFocus();
+	int index;
+	if((index = HitTestEx(point, NULL)) != -1)
+	{
+		LastTimeSelection = CurrentSelection;
+		CurrentSelection = index;
+		SetItemState(index, LVIS_SELECTED|LVIS_FOCUSED, LVIS_SELECTED|LVIS_FOCUSED);
+	}
+
+	CListCtrl::OnLButtonDown(nFlags, point);
 }
 
 // EditSubLabel		- Start edit of a sub item label

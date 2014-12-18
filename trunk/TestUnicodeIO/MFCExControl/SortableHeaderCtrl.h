@@ -4,7 +4,6 @@
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
-#include "MySpin.h"
 // SortableHeaderCtrl.h : header file
 //
 #define MAX_COLUMNS	     300

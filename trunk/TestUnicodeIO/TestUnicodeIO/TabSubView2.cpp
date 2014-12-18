@@ -127,6 +127,7 @@ void CTabSubView2::InertTempDataToList()
 
     CStringList strList;
     strList.RemoveAll();
+    strList.AddTail(_T("string1"));
     lvc.csList = &strList;
 
     lvc.fmt = nColFormat[0];

@@ -1,6 +1,5 @@
 #pragma once
-
-#include "MySpin.h"
+#include "EditSpinWnd.h"
 #include "InPlaceDateTimeCtrl.h"	// Added by ClassView
 #include "InPlaceComboBox.h"	// Added by ClassView
 #include "InPlaceEdit2.h"

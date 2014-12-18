@@ -17,6 +17,7 @@ CTabSubView5::~CTabSubView5()
 BEGIN_MESSAGE_MAP(CTabSubView5, CDialog)
     ON_WM_SIZE()
     ON_NOTIFY(LVN_GETDISPINFO, IDC_LIST_INTPP, OnLvnGetdispinfoListIntPP)
+    ON_WM_PAINT()
 END_MESSAGE_MAP()
 
 void CTabSubView5::DoDataExchange(CDataExchange* pDX)
@@ -167,4 +168,11 @@ void CTabSubView5::OnLvnGetdispinfoListIntPP(NMHDR *pNMHDR, LRESULT *pResult)
 
     }
     *pResult = 0;
+}
+
+void CTabSubView5::OnPaint()
+{
+    CPaintDC dc(this);
+    dc.MoveTo(1, 0);
+    dc.LineTo(1, 100);
 }
