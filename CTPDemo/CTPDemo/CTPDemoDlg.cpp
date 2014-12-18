@@ -3,6 +3,7 @@
 #include "CTPDemoDlg.h"
 #include "afxdialogex.h"
 #include "MyClass.h"
+#include "MyTradeClass.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -206,28 +207,51 @@ BOOL CCTPDemoDlg::PreTranslateMessage(MSG* pMsg)
 
 void CCTPDemoDlg::OnBnClickedButton1()
 {
-    char moudlePath[256] = {0};
-    ::GetCurrentDirectory(255, moudlePath);
+//     char moudlePath[256] = {0};
+//     ::GetCurrentDirectory(255, moudlePath);
+//     // 创建实例
+//     CThostFtdcTraderApi* pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi(moudlePath);
+//     // 创建spi实例
+//     CTraderApiSample* pSpi = new CTraderApiSample(pUserApi, "31000853", "80002", "123456", "cu1411");
+//     // 注册spi实例
+//     pUserApi->RegisterSpi(pSpi);
+//     //订阅私有流
+//     pUserApi->SubscribePrivateTopic(THOST_TERT_RESUME);
+//     //订阅公有流
+//     pUserApi->SubscribePublicTopic(THOST_TERT_QUICK);
+//     // 注册前置机
+//     pUserApi->RegisterFront("tcp://10.253.117.107:13153");
+//     pUserApi->RegisterNameServer("tcp://10.253.117.110:11000");
+//     CThostFtdcFensUserInfoField FensUserInfo = {0};
+//     strncpy(FensUserInfo.UserID, "201301", sizeof(FensUserInfo.UserID)-1);
+//     FensUserInfo.LoginMode = 'E';
+//     pUserApi->RegisterFensUserInfo(&FensUserInfo);
+//     // 初始化
+//     pUserApi->Init();
+//     printf ("\npress return to quit...\n");
+//     //pUserApi->Join();
+//     pUserApi->Release();
+
+    ///////////////////
     // 创建实例
-    CThostFtdcTraderApi* pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi(moudlePath);
+    CThostFtdcMdApi* pUserApi = CThostFtdcMdApi::CreateFtdcMdApi("");
     // 创建spi实例
-    CTraderApiSample* pSpi = new CTraderApiSample(pUserApi, "31000853", "80002", "123456", "cu1411");
+    CMdUserApiSample* pSpi = new CMdUserApiSample(pUserApi, "8000", "test", "123456");
     // 注册spi实例
     pUserApi->RegisterSpi(pSpi);
-    //订阅私有流
-    pUserApi->SubscribePrivateTopic(THOST_TERT_RESUME);
-    //订阅公有流
-    pUserApi->SubscribePublicTopic(THOST_TERT_QUICK);
-    // 注册前置机
-    pUserApi->RegisterFront("tcp://10.253.117.107:13153");
-    pUserApi->RegisterNameServer("tcp://10.253.117.110:11000");
+    // 注册前置机 
+    //pUserApi->RegisterFront("tcp://10.253.117.107:13153");
+    //pUserApi->RegisterFront("udp://10.253.117.107:20518");
+    //pUserApi->RegisterNameServer("tcp://10.253.117.110:11000");
+    pUserApi->RegisterNameServer("tcp://27.115.78.154:31213");
     CThostFtdcFensUserInfoField FensUserInfo = {0};
     strncpy(FensUserInfo.UserID, "201301", sizeof(FensUserInfo.UserID)-1);
     FensUserInfo.LoginMode = 'E';
     pUserApi->RegisterFensUserInfo(&FensUserInfo);
     // 初始化
     pUserApi->Init();
-    printf ("\npress return to quit...\n");
-    //pUserApi->Join();
+    // 等待信号
+    //WaitForSingleObject(g_hEvent, INFINITE);
+    // 初始化
     pUserApi->Release();
 }
