@@ -135,10 +135,13 @@ void main()
 
     // 初始化MdApi
     pMdApi = CThostFtdcMdApi::CreateFtdcMdApi("./thostmduserapi.dll"); // 创建MdApi//"./thostmduserapi.dll"
-    CThostFtdcMdSpi* pMdSpi = new CMyMdSpi();
+    CMyMdSpi* pMdSpi = new CMyMdSpi();
+    pMdSpi->SetBrokerID("8000");
+    pMdSpi->SetInvestorID("test");
+    pMdSpi->SetPassword("123456");
     pMdApi->RegisterSpi(pMdSpi); // 注册事件类
-    pMdApi->RegisterFront(FRONT_ADDR_3B); // connect 优先行情地址
-    pMdApi->RegisterFront(FRONT_ADDR_3B); // connect 备用行情地址，1B断开，自动连接2B地址
+    pMdApi->RegisterFront("tcp://27.115.78.154:31213"); // connect 优先行情地址
+    pMdApi->RegisterFront("tcp://27.115.78.154:31213"); // connect 备用行情地址，1B断开，自动连接2B地址
 
     pMdApi->Init();
     std::cerr << "--->>> " << "Initialing MdApi" << std::endl;

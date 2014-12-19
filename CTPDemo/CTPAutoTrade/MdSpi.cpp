@@ -86,12 +86,13 @@ char LogFilePaths[80]=""; //
 ///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
 void CMyMdSpi::OnFrontConnected()
 {
-    std::cerr << "--->>> Front Connected" << std::endl;
+    std::cerr << "--->>> 前置机已连接" << std::endl;
     ///用户登录请求
+    CThostFtdcReqUserLoginField m_req;
     memset(&m_req, 0, sizeof(m_req));
-    strcpy(m_req.BrokerID, BROKER_ID);
-    strcpy(m_req.UserID, INVESTOR_ID);
-    strcpy(m_req.Password, PASSWORD);
+    strcpy(m_req.BrokerID, m_brokerID);
+    strcpy(m_req.UserID, m_investorID);
+    strcpy(m_req.Password, m_password);
     int iResult = pMdApi->ReqUserLogin(&m_req, ++iRequestID);
     std::cerr << "--->>> 发送行情用户登录请求: " << ((iResult == 0) ? "成功" : "失败") << std::endl;
 }
@@ -105,16 +106,16 @@ void CMyMdSpi::OnFrontConnected()
 /// 0x2003 收到错误报文
 void CMyMdSpi::OnFrontDisconnected(int nReason)
 {
-    std::cerr << "--->>> Front Disconnected" << std::endl;
-    std::cerr << "--->>> Reason: " << nReason << std::endl;
+    std::cerr << "--->>> 前置机断开连接" << std::endl;
+    std::cerr << "--->>> 原因: " << nReason << std::endl;
 }
 
 ///心跳超时警告。当长时间未收到报文时，该方法被调用。
 ///@param nTimeLapse 距离上次接收报文的时间
 void CMyMdSpi::OnHeartBeatWarning(int nTimeLapse)
 {
-    std::cerr << "--->>> " << __FUNCTION__ << std::endl;
-    std::cerr << "--->>> nTimerLapse = " << nTimeLapse << std::endl;
+    std::cerr << "--->>> 超时警告" << std::endl;
+    std::cerr << "--->>> 距离上次接收报文的时间: " << nTimeLapse << std::endl;
 }
 
 ///登录请求响应
@@ -123,7 +124,7 @@ void CMyMdSpi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThost
     if (bIsLast && pRspInfo->ErrorID==0)
     {
         ///获取当前交易日
-        std::cerr << "--->>> 获取当前交易日 = " << pMdApi->GetTradingDay() << std::endl;
+        std::cerr << "--->>> 当前交易日: " << pMdApi->GetTradingDay() << std::endl;
         // 请求订阅行情
         int iResult0 = pMdApi->UnSubscribeMarketData(ppInstrumentID, iInstrumentID);
         std::cerr << "--->>> 取消行情订阅请求: " << ((iResult0 == 0) ? "成功" : "失败") << std::endl;
@@ -140,7 +141,7 @@ void CMyMdSpi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThost
         sprintf(tmp,"%d",tmp1);
         strcat(perf,tmp);
         strcat(perf,".txt");
-        std::cerr << "--->>> " << perf << std::endl;
+        std::cerr << "--->>> 输出路径:" << perf << std::endl;
 
         //检查文件是否存在，是否需要新建文本文件
         std::ifstream inf;
@@ -156,21 +157,21 @@ void CMyMdSpi::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtd
 ///错误应答
 void CMyMdSpi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    std::cerr << "--->>> Error "<< std::endl;
-    std::cerr << "--->>> ErrorID=" << pRspInfo->ErrorID << ", ErrorMsg=" << pRspInfo->ErrorMsg << std::endl;
+    std::cerr << "--->>> 发生错误 "<< std::endl;
+    std::cerr << "--->>> 错误ID: " << pRspInfo->ErrorID << ", 错误信息: " << pRspInfo->ErrorMsg << std::endl;
 }
 
 ///订阅行情应答
 void CMyMdSpi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    std::cerr << "--->>> 成功订阅合约:" <<"_"<<pSpecificInstrument->InstrumentID<< std::endl;
+    std::cerr << "--->>> 成功订阅合约: " << pSpecificInstrument->InstrumentID << std::endl;
 
 }
 
 ///取消订阅行情应答
 void CMyMdSpi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    std::cerr << "--->>> " << __FUNCTION__ << std::endl;
+    std::cerr << "--->>> 已取消订阅合约: " << pSpecificInstrument->InstrumentID << std::endl;
 }
 
 ///订阅询价应答

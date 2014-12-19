@@ -18,5 +18,11 @@ public:
     virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp);
 
 protected:
-//    CThostFtdcReqUserLoginField m_req;
+    TThostFtdcBrokerIDType m_brokerID;
+    TThostFtdcInvestorIDType m_investorID;
+    TThostFtdcPasswordType m_password;
+public:
+    void SetBrokerID(TThostFtdcBrokerIDType val) { strcpy(m_brokerID, val); }
+    void SetInvestorID(TThostFtdcInvestorIDType val) { strcpy(m_investorID, val); }
+    void SetPassword(TThostFtdcPasswordType val) { strcpy(m_password, val); }
 };
