@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CTPDemo", "CTPDemo\CTPDemo.vcxproj", "{145949C7-52AF-4E6B-9B14-0107738A331B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CTPWork", "CTPAutoTrade\CTPWork.vcxproj", "{1AE80AA5-5393-41D4-99BF-E3523F64B926}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{145949C7-52AF-4E6B-9B14-0107738A331B}.Debug|Win32.Build.0 = Debug|Win32
 		{145949C7-52AF-4E6B-9B14-0107738A331B}.Release|Win32.ActiveCfg = Release|Win32
 		{145949C7-52AF-4E6B-9B14-0107738A331B}.Release|Win32.Build.0 = Release|Win32
+		{1AE80AA5-5393-41D4-99BF-E3523F64B926}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1AE80AA5-5393-41D4-99BF-E3523F64B926}.Debug|Win32.Build.0 = Debug|Win32
+		{1AE80AA5-5393-41D4-99BF-E3523F64B926}.Release|Win32.ActiveCfg = Release|Win32
+		{1AE80AA5-5393-41D4-99BF-E3523F64B926}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
