@@ -109,7 +109,7 @@ extern TThostFtdcOrderRefType ORDER_REF; //报单引用
 
 
 
-void main(void)
+void main()
 {
     void Erasefiles();
     void Sniffer();
@@ -135,7 +135,7 @@ void main(void)
 
     // 初始化MdApi
     pMdApi = CThostFtdcMdApi::CreateFtdcMdApi("./thostmduserapi.dll"); // 创建MdApi//"./thostmduserapi.dll"
-    CThostFtdcMdSpi* pMdSpi = new CMdSpi();
+    CThostFtdcMdSpi* pMdSpi = new CMyMdSpi();
     pMdApi->RegisterSpi(pMdSpi); // 注册事件类
     pMdApi->RegisterFront(FRONT_ADDR_3B); // connect 优先行情地址
     pMdApi->RegisterFront(FRONT_ADDR_3B); // connect 备用行情地址，1B断开，自动连接2B地址
@@ -144,7 +144,6 @@ void main(void)
     std::cerr << "--->>> " << "Initialing MdApi" << std::endl;
     //pMdApi->Join();
     //pMdApi->Release();
-    Sleep(1000);
     ReadConfiguration("./AutoTrader.dat"); //自定义数据，如持仓数据等均可
     std::cerr << "--->>> " << "初始化完成!" << std::endl;
 

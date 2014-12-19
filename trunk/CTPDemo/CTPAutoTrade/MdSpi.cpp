@@ -82,98 +82,109 @@ double TickBPrice[4]; //
 char TickFileWritepaths[80]=""; //
 char LogFilePaths[80]=""; //
 
-void CMdSpi::OnRspError(CThostFtdcRspInfoField *pRspInfo,
-    int nRequestID, bool bIsLast)
+
+///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
+void CMyMdSpi::OnFrontConnected()
 {
-    std::cerr << "--->>> "<< __FUNCTION__ << std::endl;
-    IsErrorRspInfo(pRspInfo);
+    std::cerr << "--->>> Front Connected" << std::endl;
+    ///用户登录请求
+    memset(&m_req, 0, sizeof(m_req));
+    strcpy(m_req.BrokerID, BROKER_ID);
+    strcpy(m_req.UserID, INVESTOR_ID);
+    strcpy(m_req.Password, PASSWORD);
+    int iResult = pMdApi->ReqUserLogin(&m_req, ++iRequestID);
+    std::cerr << "--->>> 发送行情用户登录请求: " << ((iResult == 0) ? "成功" : "失败") << std::endl;
 }
 
-void CMdSpi::OnFrontDisconnected(int nReason)
+///当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
+///@param nReason 错误原因
+/// 0x1001 网络读失败
+/// 0x1002 网络写失败
+/// 0x2001 接收心跳超时
+/// 0x2002 发送心跳失败
+/// 0x2003 收到错误报文
+void CMyMdSpi::OnFrontDisconnected(int nReason)
 {
-    std::cerr << "--->>> " << __FUNCTION__ << std::endl;
-    std::cerr << "--->>> Reason = " << nReason << std::endl;
+    std::cerr << "--->>> Front Disconnected" << std::endl;
+    std::cerr << "--->>> Reason: " << nReason << std::endl;
 }
 
-void CMdSpi::OnHeartBeatWarning(int nTimeLapse)
+///心跳超时警告。当长时间未收到报文时，该方法被调用。
+///@param nTimeLapse 距离上次接收报文的时间
+void CMyMdSpi::OnHeartBeatWarning(int nTimeLapse)
 {
     std::cerr << "--->>> " << __FUNCTION__ << std::endl;
     std::cerr << "--->>> nTimerLapse = " << nTimeLapse << std::endl;
 }
 
-void CMdSpi::OnFrontConnected()
+///登录请求响应
+void CMyMdSpi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    std::cerr << "--->>> " << __FUNCTION__ << std::endl;
-    //std::cerr << "--->>> " << "CMdSpi::OnFrontConnected" << std::endl;
-    ///用户登录请求
-    ReqUserLogin();
-
-}
-
-
-void CMdSpi::ReqUserLogin()
-{
-    CThostFtdcReqUserLoginField req;
-    memset(&req, 0, sizeof(req));
-    strcpy(req.BrokerID, BROKER_ID);
-    strcpy(req.UserID, INVESTOR_ID);
-    strcpy(req.Password, PASSWORD);
-    int iResult = pMdApi->ReqUserLogin(&req, ++iRequestID);
-    std::cerr << "--->>> 发送行情用户登录请求: " << ((iResult == 0) ? "成功" : "失败") << std::endl;
-}
-
-void CMdSpi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
-    CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    std::cerr << "--->>> " << __FUNCTION__ << std::endl;
-
-    if (bIsLast && !IsErrorRspInfo(pRspInfo))
+    if (bIsLast && pRspInfo->ErrorID==0)
     {
         ///获取当前交易日
         std::cerr << "--->>> 获取当前交易日 = " << pMdApi->GetTradingDay() << std::endl;
         // 请求订阅行情
-        SubscribeMarketData(); 
+        int iResult0 = pMdApi->UnSubscribeMarketData(ppInstrumentID, iInstrumentID);
+        std::cerr << "--->>> 取消行情订阅请求: " << ((iResult0 == 0) ? "成功" : "失败") << std::endl;
+        Sleep(1000);
+        int iResult = pMdApi->SubscribeMarketData(ppInstrumentID, iInstrumentID);
+        std::cerr << "--->>> 发送行情订阅请求: " << ((iResult == 0) ? "成功" : "失败") << std::endl;
+
+        //文件命名，“OrderInfo_date.txt”
+        char perf[100];
+        char tmp[20];
+        int tmp1 = 20140424;
+        strcpy(perf,"./AutoTrade/");
+        strcpy(perf,"TraderInfo_");
+        sprintf(tmp,"%d",tmp1);
+        strcat(perf,tmp);
+        strcat(perf,".txt");
+        std::cerr << "--->>> " << perf << std::endl;
+
+        //检查文件是否存在，是否需要新建文本文件
+        std::ifstream inf;
+        inf.open(perf, std::ios::out);
     }
 }
 
-void CMdSpi::SubscribeMarketData()
+///登出请求响应
+void CMyMdSpi::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    int iResult0 = pMdApi->UnSubscribeMarketData(ppInstrumentID, iInstrumentID);
-    std::cerr << "--->>> 取消行情订阅请求: " << ((iResult0 == 0) ? "成功" : "失败") << std::endl;
-    Sleep(1000);
-    int iResult = pMdApi->SubscribeMarketData(ppInstrumentID, iInstrumentID);
-    std::cerr << "--->>> 发送行情订阅请求: " << ((iResult == 0) ? "成功" : "失败") << std::endl;
-
-    //文件命名，“OrderInfo_date.txt”
-    char perf[100];
-    char tmp[20];
-    int tmp1 = 20140424;
-    strcpy(perf,"./AutoTrade/");
-    strcpy(perf,"TraderInfo_");
-    sprintf(tmp,"%d",tmp1);
-    strcat(perf,tmp);
-    strcat(perf,".txt");
-    std::cerr << "--->>> " << perf << std::endl;
-
-    //检查文件是否存在，是否需要新建文本文件
-    std::ifstream inf;
-    std::ofstream ouf;
-    inf.open(perf, std::ios::out);
-
 }
 
-void CMdSpi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+///错误应答
+void CMyMdSpi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cerr << "--->>> Error "<< std::endl;
+    std::cerr << "--->>> ErrorID=" << pRspInfo->ErrorID << ", ErrorMsg=" << pRspInfo->ErrorMsg << std::endl;
+}
+
+///订阅行情应答
+void CMyMdSpi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     std::cerr << "--->>> 成功订阅合约:" <<"_"<<pSpecificInstrument->InstrumentID<< std::endl;
 
 }
 
-void CMdSpi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+///取消订阅行情应答
+void CMyMdSpi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     std::cerr << "--->>> " << __FUNCTION__ << std::endl;
 }
 
-void CMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
+///订阅询价应答
+void CMyMdSpi::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+}
+
+///取消订阅询价应答
+void CMyMdSpi::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+}
+
+///深度行情通知
+void CMyMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
     //std::cerr << "--->>> " << __FUNCTION__ << std::endl;
     ///数据缓存。
@@ -273,7 +284,6 @@ void CMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDa
         }
         //***************************************************
 
-
         if (LogFilePaths[0]== '\0')
         {
             strcpy_s(LogFilePaths,"./AutoTrade/");
@@ -282,7 +292,6 @@ void CMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDa
 
             //检查文件是否存在，是否需要新建文本文件
             std::ifstream inf;
-            std::ofstream ouf;
             inf.open(LogFilePaths, std::ios::out);
         }
 
@@ -296,9 +305,7 @@ void CMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDa
 
             //检查文件是否存在，是否需要新建文本文件
             std::ifstream inf;
-            std::ofstream ouf;
             inf.open(TickFileWritepaths, std::ios::out);
-
         }
 
         //仿真模拟无法获取交易日数据，实盘行情可使用 TradingDay
@@ -311,13 +318,10 @@ void CMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDa
     ReceiveTick = false;
 }
 
-bool CMdSpi::IsErrorRspInfo(CThostFtdcRspInfoField *pRspInfo)
+///询价通知
+void CMyMdSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 {
-    // 如果ErrorID != 0, 说明收到了错误的响应
-    bool bResult = ((pRspInfo) && (pRspInfo->ErrorID != 0));
-    if (bResult)
-        std::cerr << "--->>> ErrorID=" << pRspInfo->ErrorID << ", ErrorMsg=" << pRspInfo->ErrorMsg << std::endl;
-    return bResult;
 }
+
 
 
