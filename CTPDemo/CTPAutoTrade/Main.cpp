@@ -1,10 +1,3 @@
-// AutoTrader.cpp : 单合约版本,输入经纪公司代码，实盘帐号，密码即可下单。
-//自动保存订阅合约TICK数据到\Bin\TickData下，文件名合约名称_日期.txt 
-//
-//
-//
-//AutoTrader.cpp : 定义控制台应用程序的入口点。
-
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -16,15 +9,12 @@
 #include <algorithm>
 #include <stdlib.h>
 
-#include ".\ThostTraderApi\ThostFtdcTraderApi.h"
-#include ".\ThostTraderApi\ThostFtdcMdApi.h"
-#include "TraderSpi.h"
-#include "MdSpi.h"
+#include "MyTraderSpi.h"
+#include "MyMdSpi.h"
 #include "Common.h"
 #include "DataSniffer.h"
 #include "MyTrader.h"
 
-#pragma warning(disable : 4996)
 // UserApi对象
 CThostFtdcTraderApi *pUserApi;
 // MdApi对象
@@ -111,12 +101,6 @@ extern TThostFtdcOrderRefType ORDER_REF; //报单引用
 
 void main()
 {
-    void Erasefiles();
-    void Sniffer();
-    void Trading();
-    bool ReadConfiguration(char *filepaths);
-    void WriteConfiguration(char *filepaths);
-
     Erasefiles();
     Sleep(1000);
 

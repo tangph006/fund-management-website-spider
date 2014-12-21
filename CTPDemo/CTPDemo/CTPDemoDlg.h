@@ -2,7 +2,7 @@
 #include "afxcmn.h"
 #include "FloatEdit.h"
 #include "afxwin.h"
-
+#include "MyMdSpi.h"
 
 class CCTPDemoDlg : public CDialogEx
 {
@@ -15,6 +15,7 @@ protected:
     CListCtrl m_listResult;
     CIPAddressCtrl m_ipctrlIP;
     CToolBar m_tbarMain;
+    CMyMdSpi* m_pMdSpi;
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     void InitListResultHeader();
@@ -23,6 +24,8 @@ protected:
     virtual BOOL OnInitDialog();
     virtual BOOL PreTranslateMessage(MSG* pMsg);
     afx_msg void OnPaint();
+    afx_msg void OnButtonGo();
+    afx_msg void OnButtonStop();
     afx_msg HCURSOR OnQueryDragIcon();
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -33,6 +36,4 @@ private:
     int m_oldCy;
     typedef enum {TopLeft, TopRight, BottomLeft, BottomRight} LayoutRef;
     void LayoutControl(CWnd* pCtrl, LayoutRef refTopLeft, LayoutRef refBottomRight, int cx, int cy);
-public:
-    afx_msg void OnBnClickedButton1();
 };
