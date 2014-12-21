@@ -5,7 +5,7 @@
     <ClCompile Include="CTPDemoDlg.cpp" />
     <ClCompile Include="FloatEdit.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="MyClass.h" />
+    <ClCompile Include="MyMdSpi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CTPDemo.h" />
@@ -26,6 +26,7 @@
     <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiDataType.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="MyMdSpi.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CTPDemo.rc" />

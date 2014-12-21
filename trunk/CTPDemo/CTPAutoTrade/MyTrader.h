@@ -4,8 +4,8 @@
 #include <iomanip>
 #include ".\ThostTraderApi\ThostFtdcTraderApi.h"
 #include ".\ThostTraderApi\ThostFtdcMdApi.h"
-#include "TraderSpi.h"
-#include "MdSpi.h"
+#include "MyTraderSpi.h"
+#include "MyMdSpi.h"
 
 #pragma warning(disable : 4996)
 

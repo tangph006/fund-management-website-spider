@@ -3,8 +3,8 @@
 #include <string>
 #include <windows.h>
 #include <time.h>
-#include "TraderSpi.h"
-#include "MdSpi.h"
+#include "MyTraderSpi.h"
+#include "MyMdSpi.h"
 #pragma warning(disable : 4996)
 
 // USER_API²ÎÊý

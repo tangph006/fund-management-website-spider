@@ -101,21 +101,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="MdSpi.cpp" />
+    <ClCompile Include="MyMdSpi.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="TraderSpi.cpp" />
+    <ClCompile Include="MyTraderSpi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="DataSniffer.h" />
-    <ClInclude Include="MdSpi.h" />
+    <ClInclude Include="MyMdSpi.h" />
     <ClInclude Include="MyTrader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ThostTraderApi\ThostFtdcMdApi.h" />
     <ClInclude Include="ThostTraderApi\ThostFtdcTraderApi.h" />
     <ClInclude Include="ThostTraderApi\ThostFtdcUserApiDataType.h" />
     <ClInclude Include="ThostTraderApi\ThostFtdcUserApiStruct.h" />
-    <ClInclude Include="TraderSpi.h" />
+    <ClInclude Include="MyTraderSpi.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AutoTrader.cfg" />
