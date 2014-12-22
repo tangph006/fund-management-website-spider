@@ -187,136 +187,139 @@ void CMyMdSpi::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecifi
 ///深度行情通知
 void CMyMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
-    //std::cerr << "--->>> " << __FUNCTION__ << std::endl;
-    ///数据缓存。
-    ReceiveTick = true;
-    void WriteConfiguration(char *filepaths); 
-    //SaveData();
-
-    int Volume_t=pDepthMarketData->Volume;
-    //std::cerr << "--->>> " <<"NewTick!" << std::endl;
-
-    //抛弃报单变动但无成交的tick数据,也可保留
-    if (1)
-        //if (Volume_t>FirstVolume)
-    {
-
-        FirstVolume=Volume_t;
-
-        char names[10];
-        char times[10];
-
-        strcpy(names, pDepthMarketData->InstrumentID);
-        strcpy(times, pDepthMarketData->UpdateTime);
-
-        std::string str0=names;
-        std::string str1=times;
-        std::string str2=times;
-        std::string str3=times;
-
-        str1=str1.substr(0,2); //
-        str2=str2.substr(3,2); //
-        str3=str3.substr(6,2); //
-        int hours = atoi(str1.c_str());
-        int minutes = atoi(str2.c_str());
-        int seconds = atoi(str3.c_str());
-        int Millisecs = pDepthMarketData->UpdateMillisec;
-
-        Q_BarTime_s = times; //时间字符串
-        Q_BarTime_1 = hours*60*60+minutes*60+seconds; //时间采用秒计
-        Q_BarTime_2 = (1/10e1)*hours + (1/10e3)*minutes + (1/10e5)*seconds; //时间格式0.145100 = 14：51：00
-
-        Q_UpperLimit=pDepthMarketData->UpperLimitPrice;
-        Q_LowerLimit=pDepthMarketData->LowerLimitPrice;
-
-        InstrumentID_name=names;
-
-        NewPrice = pDepthMarketData->LastPrice;
-        SellPrice1 = pDepthMarketData->AskPrice1;
-        SellVol1 = pDepthMarketData->AskVolume1;
-        BuyPrice1 = pDepthMarketData->BidPrice1;
-        BuyVol1 = pDepthMarketData->BidVolume1;
-
-        TodayVolume = pDepthMarketData->Volume;
-        OpenInt = pDepthMarketData->OpenInterest;
-
-        TickAPrice[3]=TickAPrice[2];
-        TickAPrice[2]=TickAPrice[1];
-        TickAPrice[1]=TickAPrice[0];
-        TickAPrice[0]=pDepthMarketData->LastPrice;
-
-        //TICK数据
-        //cerr << "--->>> " <<InstrumentID_name<<"_"<<Q_BarTime_2<<"_"<<SellPrice1<<"_"<<SellVol1<<"_"<<BuyPrice1<<"_"<<BuyVol1<<"_"<<NewPrice<<"_"<<TodayVolume<<"_"<<OpenInt<< endl;
-
-        //*************************************************** 
-        //生成1分钟K线
-
-        bool Timemore0=Q_BarTime_2!=0.0859 && Q_BarTime_2!=0.0900 && Q_BarTime_2!=0.1015 && Q_BarTime_2!=0.1130 && Q_BarTime_2!=0.1500;
-        bool Timemore1=Q_BarTime_2!=0.2059 && Q_BarTime_2!=0.2100 && Q_BarTime_2!=0.0230;
-        bool Timemore2=(Q_BarTime_2>0.0900 && Q_BarTime_2<0.1500) || (Q_BarTime_2>0.2100 || Q_BarTime_2<0.0230);
-
-        if (Timemore0 && Timemore1 && Timemore2 && seconds>=0 && seconds<40 && MnKlinesig==false)
-        {
-            MnKlinesig=true;
-
-            Mn_open[1] =Mn_open[0]; 
-            Mn_high[1] =Mn_high[0];
-            Mn_low[1] =Mn_low[0];
-            Mn_close[1] =Mn_close[0];
-
-            Mn_open[0] =NewPrice; 
-            Mn_high[0] =NewPrice;
-            Mn_low[0] =NewPrice;
-            Mn_close[0] =NewPrice;
-
-            //打印1分钟K线数据
-            std::cerr << "--->>> " <<InstrumentID_name<< "_" <<Q_BarTime_s<< "_" << Mn_open[1]<< "_" << Mn_high[1]<< "_" << Mn_low[1]<< "_" << Mn_close[1] << std::endl;
-        }
-        else
-        {
-            Mn_high[0] =max(Mn_high[0],NewPrice);
-            Mn_low[0] =min(Mn_low[0],NewPrice);
-            Mn_close[0] =NewPrice;
-        }
-
-        if (seconds>45 && seconds<55 && MnKlinesig==true)
-        {
-            MnKlinesig=false;
-        }
-        //***************************************************
-
-        if (LogFilePaths[0]== '\0')
-        {
-            strcpy_s(LogFilePaths,"./AutoTrade/");
-            strcat_s(LogFilePaths,pDepthMarketData->TradingDay);
-            strcat_s(LogFilePaths,".txt");
-
-            //检查文件是否存在，是否需要新建文本文件
-            std::ifstream inf;
-            inf.open(LogFilePaths, std::ios::out);
-        }
-
-        if (TickFileWritepaths[0]== '\0')
-        {
-            strcpy_s(TickFileWritepaths,"./TickData/");
-            strcat_s(TickFileWritepaths,pDepthMarketData->InstrumentID);
-            strcat_s(TickFileWritepaths,"_");
-            strcat_s(TickFileWritepaths,pDepthMarketData->TradingDay); 
-            strcat_s(TickFileWritepaths,".txt");
-
-            //检查文件是否存在，是否需要新建文本文件
-            std::ifstream inf;
-            inf.open(TickFileWritepaths, std::ios::out);
-        }
-
-        //仿真模拟无法获取交易日数据，实盘行情可使用 TradingDay
-        std::ofstream o_file(TickFileWritepaths, std::ios::app);
-        o_file << "20140508" << " " <<Q_BarTime_2<< "\t" << Millisecs <<"\t"<<SellPrice1 <<"\t"<< SellVol1 << "\t" << BuyPrice1 << "\t" << BuyVol1 << "\t" << NewPrice <<"\t"<<TodayVolume<<"\t"<<OpenInt<< std::endl; //将内容写入到文本文件中
-        o_file.close(); //关闭文件
-
-    }
-
-    ReceiveTick = false;
+    static int i=0;
+    i++;
+    std::cerr << i << ": " << std::endl;
+//     //std::cerr << "--->>> " << __FUNCTION__ << std::endl;
+//     ///数据缓存。
+//     ReceiveTick = true;
+//     void WriteConfiguration(char *filepaths); 
+//     //SaveData();
+// 
+//     int Volume_t=pDepthMarketData->Volume;
+//     //std::cerr << "--->>> " <<"NewTick!" << std::endl;
+// 
+//     //抛弃报单变动但无成交的tick数据,也可保留
+//     if (1)
+//         //if (Volume_t>FirstVolume)
+//     {
+// 
+//         FirstVolume=Volume_t;
+// 
+//         char names[10];
+//         char times[10];
+// 
+//         strcpy(names, pDepthMarketData->InstrumentID);
+//         strcpy(times, pDepthMarketData->UpdateTime);
+// 
+//         std::string str0=names;
+//         std::string str1=times;
+//         std::string str2=times;
+//         std::string str3=times;
+// 
+//         str1=str1.substr(0,2); //
+//         str2=str2.substr(3,2); //
+//         str3=str3.substr(6,2); //
+//         int hours = atoi(str1.c_str());
+//         int minutes = atoi(str2.c_str());
+//         int seconds = atoi(str3.c_str());
+//         int Millisecs = pDepthMarketData->UpdateMillisec;
+// 
+//         Q_BarTime_s = times; //时间字符串
+//         Q_BarTime_1 = hours*60*60+minutes*60+seconds; //时间采用秒计
+//         Q_BarTime_2 = (1/10e1)*hours + (1/10e3)*minutes + (1/10e5)*seconds; //时间格式0.145100 = 14：51：00
+// 
+//         Q_UpperLimit=pDepthMarketData->UpperLimitPrice;
+//         Q_LowerLimit=pDepthMarketData->LowerLimitPrice;
+// 
+//         InstrumentID_name=names;
+// 
+//         NewPrice = pDepthMarketData->LastPrice;
+//         SellPrice1 = pDepthMarketData->AskPrice1;
+//         SellVol1 = pDepthMarketData->AskVolume1;
+//         BuyPrice1 = pDepthMarketData->BidPrice1;
+//         BuyVol1 = pDepthMarketData->BidVolume1;
+// 
+//         TodayVolume = pDepthMarketData->Volume;
+//         OpenInt = pDepthMarketData->OpenInterest;
+// 
+//         TickAPrice[3]=TickAPrice[2];
+//         TickAPrice[2]=TickAPrice[1];
+//         TickAPrice[1]=TickAPrice[0];
+//         TickAPrice[0]=pDepthMarketData->LastPrice;
+// 
+//         //TICK数据
+//         //cerr << "--->>> " <<InstrumentID_name<<"_"<<Q_BarTime_2<<"_"<<SellPrice1<<"_"<<SellVol1<<"_"<<BuyPrice1<<"_"<<BuyVol1<<"_"<<NewPrice<<"_"<<TodayVolume<<"_"<<OpenInt<< endl;
+// 
+//         //*************************************************** 
+//         //生成1分钟K线
+// 
+//         bool Timemore0=Q_BarTime_2!=0.0859 && Q_BarTime_2!=0.0900 && Q_BarTime_2!=0.1015 && Q_BarTime_2!=0.1130 && Q_BarTime_2!=0.1500;
+//         bool Timemore1=Q_BarTime_2!=0.2059 && Q_BarTime_2!=0.2100 && Q_BarTime_2!=0.0230;
+//         bool Timemore2=(Q_BarTime_2>0.0900 && Q_BarTime_2<0.1500) || (Q_BarTime_2>0.2100 || Q_BarTime_2<0.0230);
+// 
+//         if (Timemore0 && Timemore1 && Timemore2 && seconds>=0 && seconds<40 && MnKlinesig==false)
+//         {
+//             MnKlinesig=true;
+// 
+//             Mn_open[1] =Mn_open[0]; 
+//             Mn_high[1] =Mn_high[0];
+//             Mn_low[1] =Mn_low[0];
+//             Mn_close[1] =Mn_close[0];
+// 
+//             Mn_open[0] =NewPrice; 
+//             Mn_high[0] =NewPrice;
+//             Mn_low[0] =NewPrice;
+//             Mn_close[0] =NewPrice;
+// 
+//             //打印1分钟K线数据
+//             std::cerr << "--->>> " <<InstrumentID_name<< "_" <<Q_BarTime_s<< "_" << Mn_open[1]<< "_" << Mn_high[1]<< "_" << Mn_low[1]<< "_" << Mn_close[1] << std::endl;
+//         }
+//         else
+//         {
+//             Mn_high[0] =max(Mn_high[0],NewPrice);
+//             Mn_low[0] =min(Mn_low[0],NewPrice);
+//             Mn_close[0] =NewPrice;
+//         }
+// 
+//         if (seconds>45 && seconds<55 && MnKlinesig==true)
+//         {
+//             MnKlinesig=false;
+//         }
+//         //***************************************************
+// 
+//         if (LogFilePaths[0]== '\0')
+//         {
+//             strcpy_s(LogFilePaths,"./AutoTrade/");
+//             strcat_s(LogFilePaths,pDepthMarketData->TradingDay);
+//             strcat_s(LogFilePaths,".txt");
+// 
+//             //检查文件是否存在，是否需要新建文本文件
+//             std::ifstream inf;
+//             inf.open(LogFilePaths, std::ios::out);
+//         }
+// 
+//         if (TickFileWritepaths[0]== '\0')
+//         {
+//             strcpy_s(TickFileWritepaths,"./TickData/");
+//             strcat_s(TickFileWritepaths,pDepthMarketData->InstrumentID);
+//             strcat_s(TickFileWritepaths,"_");
+//             strcat_s(TickFileWritepaths,pDepthMarketData->TradingDay); 
+//             strcat_s(TickFileWritepaths,".txt");
+// 
+//             //检查文件是否存在，是否需要新建文本文件
+//             std::ifstream inf;
+//             inf.open(TickFileWritepaths, std::ios::out);
+//         }
+// 
+//         //仿真模拟无法获取交易日数据，实盘行情可使用 TradingDay
+//         std::ofstream o_file(TickFileWritepaths, std::ios::app);
+//         o_file << "20140508" << " " <<Q_BarTime_2<< "\t" << Millisecs <<"\t"<<SellPrice1 <<"\t"<< SellVol1 << "\t" << BuyPrice1 << "\t" << BuyVol1 << "\t" << NewPrice <<"\t"<<TodayVolume<<"\t"<<OpenInt<< std::endl; //将内容写入到文本文件中
+//         o_file.close(); //关闭文件
+// 
+//     }
+// 
+//     ReceiveTick = false;
 }
 
 ///询价通知

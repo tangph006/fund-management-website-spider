@@ -18,12 +18,17 @@ public:
     virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData);
     virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp);
 public:
+    void InitMyParts();
     void SetBrokerID(TThostFtdcBrokerIDType val) { strcpy(m_brokerID, val); }
     void SetInvestorID(TThostFtdcInvestorIDType val) { strcpy(m_investorID, val); }
     void SetPassword(TThostFtdcPasswordType val) { strcpy(m_password, val); }
-    void SetMdApi(CThostFtdcMdApi* val) { m_pMdApi = val; }
-    CThostFtdcMdApi* GetMdApi(){ return m_pMdApi; }
+    void AddInstrumentID(std::string strIns);
+    void Login();
+    void Logout();
+    void StartSubscribe();
     void StopSubscribe();
+    void SetAddr1(char* str) { assert(strlen(str) < 256); strcpy(m_addr1, str); }
+    void SetAddr2(char* str) { assert(strlen(str) < 256); strcpy(m_addr2, str); }
 public:
     int m_nRequestID;
 protected:
@@ -32,5 +37,6 @@ protected:
     TThostFtdcInvestorIDType m_investorID;
     TThostFtdcPasswordType m_password;
     std::vector<std::string> m_vInstrumentID;
-    //CThostFtdcDepthMarketDataField* m_p
+    char m_addr1[256];
+    char m_addr2[256];
 };
