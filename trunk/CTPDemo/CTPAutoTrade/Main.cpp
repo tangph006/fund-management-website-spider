@@ -39,13 +39,13 @@ TThostFtdcPasswordType PASSWORD = "123456"; // 实盘：用户密码
 //TThostFtdcInvestorIDType INVESTOR_ID = "00092"; // 投资者代码:仿真
 //TThostFtdcPasswordType PASSWORD = "888888"; // 用户密码:仿真
 
-TThostFtdcInstrumentIDType INSTRUMENT_ID = "IF1412"; // 交易合约代码
+TThostFtdcInstrumentIDType INSTRUMENT_ID = "IF1501"; // 交易合约代码
 TThostFtdcDirectionType DIRECTION; // 交易买卖方向
 TThostFtdcOffsetFlagType MARKETState; // 开平仓
 TThostFtdcPriceType LIMIT_PRICE; // 交易价格
 
 //char *ppInstrumentID[] = {"IF1406", "rb1410", "j1409", "ru1409","SR409", "m1409", "y1409", "p1409","ag1412", "cu1408"}; // 行情订阅列表
-char *ppInstrumentID[] = {"IF1412"}; // 行情订阅列表
+char *ppInstrumentID[] = {"IF1501"}; // 行情订阅列表
 int iInstrumentID = 1; // 行情订阅数量
 
 bool RunMode=0; // 实盘下单=1,否则=0； 影响Common.h中的SendOrder()函数
@@ -133,16 +133,16 @@ void main()
     //pMdApi->Release();
     ReadConfiguration("./AutoTrader.dat"); //自定义数据，如持仓数据等均可
     std::cerr << "--->>> " << "初始化完成!" << std::endl;
-
-    while(1)
-    {
-        //指标计算,下面只是个简单例子
-        //可自建函数，进行复杂处理 见DataSniffer.h
-        Sniffer();
-        //下单控制
-        //可自建函数，单独复杂处理 见MyTrader.h
-        Trading();
-    }
+    getchar();
+//     while(1)
+//     {
+//         //指标计算,下面只是个简单例子
+//         //可自建函数，进行复杂处理 见DataSniffer.h
+//         Sniffer();
+//         //下单控制
+//         //可自建函数，单独复杂处理 见MyTrader.h
+//         Trading();
+//     }
 }
 
 

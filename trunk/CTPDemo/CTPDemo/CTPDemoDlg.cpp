@@ -9,15 +9,17 @@
 
 CCTPDemoDlg::CCTPDemoDlg(CWnd* pParent)
     : CDialogEx(CCTPDemoDlg::IDD, pParent)
+    , CThostFtdcMdSpi()
 {
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-    m_pMdSpi = new CMyMdSpi();
+    ClearMyParts();
+    m_vecMsg.clear();
 }
 
 void CCTPDemoDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
     lpMMI->ptMinTrackSize.x = 380;
-    lpMMI->ptMinTrackSize.y = 360;
+    lpMMI->ptMinTrackSize.y = 200;
     CDialogEx::OnGetMinMaxInfo(lpMMI);
 }
 
@@ -26,9 +28,9 @@ int CCTPDemoDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if (CDialogEx::OnCreate(lpCreateStruct) == -1)
         return -1;
 
-    if (!m_tbarMain.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
+    if (!m_toolbar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
         | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
-        !m_tbarMain.LoadToolBar(IDR_STOP_START))
+        !m_toolbar.LoadToolBar(IDR_STOP_START))
     {
         return -1;
     }
@@ -51,8 +53,11 @@ BEGIN_MESSAGE_MAP(CCTPDemoDlg, CDialogEx)
     ON_WM_GETMINMAXINFO()
     ON_WM_QUERYDRAGICON()
     ON_WM_CREATE()
-    ON_BN_CLICKED(IDC_BUTTON1, OnButtonGo)
+    ON_BN_CLICKED(IDC_BTN_GO, &CCTPDemoDlg::OnButtonStart)
     ON_BN_CLICKED(IDC_BTN_STOP, &CCTPDemoDlg::OnButtonStop)
+    ON_BN_CLICKED(IDC_BTN_LOGIN, &CCTPDemoDlg::OnButtonLogin)
+    ON_BN_CLICKED(IDC_BTN_LOGOUT, &CCTPDemoDlg::OnBnClickedBtnLogout)
+    ON_NOTIFY(LVN_GETDISPINFO, IDC_LIST_RESULT, &CCTPDemoDlg::OnLvnGetdispinfoListResult)
 END_MESSAGE_MAP()
 
 BOOL CCTPDemoDlg::OnInitDialog()
@@ -70,20 +75,22 @@ BOOL CCTPDemoDlg::OnInitDialog()
     CRect rect;
     m_listResult.GetWindowRect(rect);
     ScreenToClient(rect);
-    m_tbarMain.SetWindowPos(NULL, rect.left, rect.top-24, rect.Width(), 24, NULL);
+    m_toolbar.SetWindowPos(NULL, rect.left, rect.top-24, rect.Width(), 24, NULL);
 
     m_editPort.SetPrecision(0);
     m_editUID.SetPrecision(0);
+
+    m_listResult.SetItemCount(100);
+
+    m_toolbar.ShowWindow(FALSE);
+    DisableBtns();
+    GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(TRUE);
     return TRUE;
 }
 
 void CCTPDemoDlg::InitListResultHeader()
 {
-    m_listResult.InsertColumn(0, _T("Column1"), LVCFMT_LEFT, 100);
-    m_listResult.InsertColumn(1, _T("Column2"), LVCFMT_LEFT, 100);
-    m_listResult.InsertColumn(2, _T("Column3"), LVCFMT_LEFT, 100);
-    m_listResult.InsertColumn(3, _T("Column4"), LVCFMT_LEFT, 100);
-    m_listResult.InsertColumn(4, _T("Time Elapsed"), LVCFMT_LEFT, 100);
+    m_listResult.InsertColumn(0, _T("Column1"), LVCFMT_LEFT, 360);
 }
 
 void CCTPDemoDlg::OnPaint()
@@ -131,7 +138,7 @@ void CCTPDemoDlg::OnSize(UINT nType, int cx, int cy)
     LayoutControl(&m_ipctrlIP, TopLeft, TopLeft, cx, cy);
     LayoutControl(&m_editPort, TopLeft, TopLeft, cx, cy);
     LayoutControl(&m_listResult, TopLeft, BottomRight, cx, cy);
-    LayoutControl(&m_tbarMain, TopLeft, TopRight, cx, cy);
+    LayoutControl(&m_toolbar, TopLeft, TopRight, cx, cy);
     if(nType != SIZE_MINIMIZED)
     {
         m_oldCx = cx;
@@ -199,19 +206,224 @@ BOOL CCTPDemoDlg::PreTranslateMessage(MSG* pMsg)
     return CDialog::PreTranslateMessage(pMsg);
 }
 
-void CCTPDemoDlg::OnButtonGo()
+void CCTPDemoDlg::OnButtonStart()
 {
-//     m_pMdSpi->SetBrokerID("8000");
-//     m_pMdSpi->SetInvestorID("test");
-//     m_pMdSpi->SetPassword("123456");
-//     m_pMdSpi->SetMdApi(CThostFtdcMdApi::CreateFtdcMdApi("./thostmduserapi.dll"));
-//     m_pMdSpi->GetMdApi()->RegisterSpi(m_pMdSpi);
-//     m_pMdSpi->GetMdApi()->RegisterFront("tcp://27.115.78.154:31213");
-//     m_pMdSpi->GetMdApi()->RegisterFront("tcp://27.115.78.154:31213");
-//     m_pMdSpi->GetMdApi()->Init();
+    DisableBtns();
+    GetDlgItem(IDC_BTN_STOP)->EnableWindow(TRUE);
+    GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
+    StartSubscribe();
 }
 
 void CCTPDemoDlg::OnButtonStop()
 {
-    m_pMdSpi->StopSubscribe();
+    DisableBtns();
+    GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
+    GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
+    StopSubscribe();
+}
+
+
+void CCTPDemoDlg::OnButtonLogin()
+{
+    DisableBtns();
+    EnableUsernameCtrls(FALSE);
+    GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
+    GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
+
+    ClearMyParts();
+    SetBrokerID("8000");
+    SetInvestorID("test");
+    SetPassword("123456");
+    m_vInstrumentID.push_back("IF1501");
+    m_addr1 = _T("tcp://27.115.78.154:31213");
+    m_addr2 = _T("tcp://27.115.78.154:31213");
+    Login();
+}
+
+void CCTPDemoDlg::OnBnClickedBtnLogout()
+{
+    DisableBtns();
+    EnableUsernameCtrls(TRUE);
+    GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(TRUE);
+    StopSubscribe();
+    Logout();
+}
+
+void CCTPDemoDlg::DisableBtns()
+{
+    GetDlgItem(IDC_BTN_GO)->EnableWindow(FALSE);
+    GetDlgItem(IDC_BTN_STOP)->EnableWindow(FALSE);
+    GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(FALSE);
+    GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(FALSE);
+}
+
+void CCTPDemoDlg::EnableUsernameCtrls(BOOL bEnable)
+{
+    GetDlgItem(IDC_STATIC_IP)->EnableWindow(bEnable);
+    GetDlgItem(IDC_IPCTRL_IP)->EnableWindow(bEnable);
+    GetDlgItem(IDC_STATIC_PORT)->EnableWindow(bEnable);
+    GetDlgItem(IDC_EDIT_PORT)->EnableWindow(bEnable);
+    GetDlgItem(IDC_STATIC_BROKERID)->EnableWindow(bEnable);
+    GetDlgItem(IDC_EDIT_BROKERID)->EnableWindow(bEnable);
+    GetDlgItem(IDC_STATIC_USERID)->EnableWindow(bEnable);
+    GetDlgItem(IDC_EDIT_USERID)->EnableWindow(bEnable);
+    GetDlgItem(IDC_STATIC_PASSWORD)->EnableWindow(bEnable);
+    GetDlgItem(IDC_EDIT_PASSWORD)->EnableWindow(bEnable);
+}
+
+/////////////////////////////////////////////engine start/////////////////////////////////////////////
+
+void CCTPDemoDlg::OnFrontConnected()
+{
+    CThostFtdcReqUserLoginField req;
+    memset(&req, 0, sizeof(req));
+    strcpy(req.BrokerID, m_brokerID);
+    strcpy(req.UserID, m_investorID);
+    strcpy(req.Password, m_password);
+    m_pMdApi->ReqUserLogin(&req, m_nRequestID);
+    m_nRequestID++;
+    AddMsg(_T("OnFrontConnected()"));
+}
+
+void CCTPDemoDlg::OnFrontDisconnected(int nReason)
+{
+    AddMsg(_T("OnFrontDisconnected()"));
+}
+
+void CCTPDemoDlg::OnHeartBeatWarning(int nTimeElapse)
+{
+    AddMsg(_T("OnHeartBeatWarning()"));
+}
+
+void CCTPDemoDlg::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    AddMsg(_T("OnRspUserLogin()"));
+    if(bIsLast && pRspInfo->ErrorID==0)
+    {
+    }
+}
+
+void CCTPDemoDlg::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    AddMsg(_T("OnRspUserLogout()"));
+}
+
+void CCTPDemoDlg::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    AddMsg(_T("OnRspError()"));
+}
+
+void CCTPDemoDlg::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    AddMsg(_T("OnRspSubMarketData()"));
+}
+
+void CCTPDemoDlg::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    AddMsg(_T("OnRspUnSubMarketData()"));
+}
+
+void CCTPDemoDlg::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    AddMsg(_T("OnRspSubForQuoteRsp()"));
+}
+
+void CCTPDemoDlg::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    AddMsg(_T("OnRspUnSubForQuoteRsp()"));
+}
+
+void CCTPDemoDlg::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
+{
+    static int i=0;
+    i++;
+    CString strMsg;
+    strMsg.Format(_T("OnRtnDepthMarketData(): %d"), i);
+    AddMsg(strMsg);
+}
+
+void CCTPDemoDlg::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
+{
+    AddMsg(_T("OnRtnForQuoteRsp()"));
+}
+
+void CCTPDemoDlg::StartSubscribe()
+{
+    size_t nCount = m_vInstrumentID.size();
+    char** ppInstrumentID = new char*[nCount];
+    for(size_t i=0; i<nCount; i++)
+    {
+        CString str = m_vInstrumentID.at(i);
+        ppInstrumentID[i] = new char[str.GetLength()+1];
+        strcpy(ppInstrumentID[i], str.GetBuffer());
+        ppInstrumentID[i][str.GetLength()] = 0;
+    }
+
+    m_pMdApi->UnSubscribeMarketData(ppInstrumentID, nCount);
+    m_pMdApi->SubscribeMarketData(ppInstrumentID, nCount);
+}
+
+void CCTPDemoDlg::StopSubscribe()
+{
+    size_t nCount = m_vInstrumentID.size();
+    char** ppInstrumentID = new char*[nCount];
+    for(size_t i=0; i<nCount; i++)
+    {
+        CString str = m_vInstrumentID.at(i);
+        ppInstrumentID[i] = new char[str.GetLength()+1];
+        strcpy(ppInstrumentID[i], str.GetBuffer());
+        ppInstrumentID[i][str.GetLength()] = 0;
+    }
+    m_pMdApi->UnSubscribeMarketData(ppInstrumentID, nCount);
+}
+
+void CCTPDemoDlg::Login()
+{
+    m_pMdApi = CThostFtdcMdApi::CreateFtdcMdApi("./thostmduserapi.dll");
+    m_pMdApi->RegisterSpi(this);
+    m_pMdApi->RegisterFront(m_addr1.GetBuffer());
+    m_pMdApi->RegisterFront(m_addr2.GetBuffer());
+    m_pMdApi->Init();
+}
+
+void CCTPDemoDlg::Logout()
+{
+    CThostFtdcUserLogoutField logout;
+    memset(&logout, 0, sizeof(logout));
+    strcpy(logout.BrokerID, m_brokerID);
+    strcpy(logout.UserID, m_investorID);
+    m_pMdApi->ReqUserLogout(&logout, m_nRequestID);
+    m_nRequestID++;
+}
+
+void CCTPDemoDlg::ClearMyParts()
+{
+    memset(m_brokerID, 0, sizeof(m_brokerID));
+    memset(m_investorID, 0, sizeof(m_investorID));
+    memset(m_password, 0, sizeof(m_password));
+    m_vInstrumentID.clear();
+}
+
+void CCTPDemoDlg::AddMsg(CString strMsg)
+{
+    m_vecMsg.push_back(strMsg);
+    int nItemCount = m_listResult.GetItemCount();
+    if(nItemCount < m_vecMsg.size())
+    {
+        m_listResult.SetItemCount(nItemCount*2);
+    }
+    m_listResult.EnsureVisible(m_vecMsg.size()-1, TRUE);
+}
+
+void CCTPDemoDlg::OnLvnGetdispinfoListResult(NMHDR *pNMHDR, LRESULT *pResult)
+{
+    NMLVDISPINFO *pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+    int nItem = pDispInfo->item.iItem;
+    int nSubItem = pDispInfo->item.iSubItem;
+    if(pDispInfo->item.mask & LVIF_TEXT)
+    {
+        assert(nSubItem == 0);
+        lstrcpy(pDispInfo->item.pszText, m_vecMsg[nItem]);
+    }
+    *pResult = 0;
 }
