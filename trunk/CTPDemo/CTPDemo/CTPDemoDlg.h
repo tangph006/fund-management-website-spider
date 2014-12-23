@@ -1,11 +1,11 @@
 #pragma once
 #include "afxcmn.h"
 #include "FloatEdit.h"
+#include "MyListCtrl.h"
 #include "afxwin.h"
 #include <string>
 #include <vector>
 #include "..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h"
-#include "..\CTPAutoTrade\ThostTraderApi\ThostFtdcMdApi.h"
 
 class CCTPDemoDlg : public CDialogEx, public CThostFtdcMdSpi
 {
@@ -15,7 +15,7 @@ public:
 protected:
     CFloatEdit m_editPort;
     CFloatEdit m_editUID;
-    CListCtrl m_listResult;
+    CMyListCtrl m_listResult;
     CIPAddressCtrl m_ipctrlIP;
     CToolBar m_toolbar;
 protected:
@@ -34,9 +34,10 @@ protected:
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+    afx_msg void OnLvnGetdispinfoListResult(NMHDR *pNMHDR, LRESULT *pResult);
     DECLARE_MESSAGE_MAP()
 private:
-    void DisableBtns();
+    void DisableAllBtns();
     void EnableUsernameCtrls(BOOL bEnable);
 private:
     int m_oldCx;
@@ -69,7 +70,7 @@ public:
     void StopSubscribe();
 protected:
 private:
-    void AddMsg(CString strMsg);
+    void AppendMsg(CString strMsg);
 public:
     int m_nRequestID;
 protected:
@@ -82,6 +83,4 @@ protected:
     CString m_addr2;
 private:
     std::vector<CString> m_vecMsg;
-public:
-    afx_msg void OnLvnGetdispinfoListResult(NMHDR *pNMHDR, LRESULT *pResult);
 };

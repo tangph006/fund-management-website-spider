@@ -3,30 +3,46 @@
   <ItemGroup>
     <ClCompile Include="CTPDemo.cpp" />
     <ClCompile Include="CTPDemoDlg.cpp" />
-    <ClCompile Include="FloatEdit.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="MyMdSpi.cpp" />
+    <ClCompile Include="FloatEdit.cpp">
+      <Filter>MyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="Common.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="MyListCtrl.cpp">
+      <Filter>MyControl</Filter>
+    </ClCompile>
+    <ClCompile Include="DataStorage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CTPDemo.h" />
     <ClInclude Include="CTPDemoDlg.h" />
-    <ClInclude Include="FloatEdit.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiStruct.h">
-      <Filter>Common</Filter>
+      <Filter>ThostFtdc</Filter>
     </ClInclude>
     <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h">
-      <Filter>Common</Filter>
+      <Filter>ThostFtdc</Filter>
     </ClInclude>
     <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcTraderApi.h">
-      <Filter>Common</Filter>
+      <Filter>ThostFtdc</Filter>
     </ClInclude>
     <ClInclude Include="..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiDataType.h">
+      <Filter>ThostFtdc</Filter>
+    </ClInclude>
+    <ClInclude Include="FloatEdit.h">
+      <Filter>MyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="MyMdSpi.h" />
+    <ClInclude Include="MyListCtrl.h">
+      <Filter>MyControl</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStorage.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CTPDemo.rc" />
@@ -37,8 +53,14 @@
     <None Include="res\toolbar1.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Common">
+    <Filter Include="ThostFtdc">
       <UniqueIdentifier>{e9ce515c-a7aa-4e08-b118-64c1d8e35330}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyControl">
+      <UniqueIdentifier>{18f24550-e570-42b9-8cef-63cd3830f941}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{05e47bce-4844-4431-9678-35ca99b3f8f8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
