@@ -9,13 +9,15 @@ template<class T>
 class MyFileMapManager
 {
 public:
-    MyFileMapManager():m_nDataCount(0),m_pData(0),m_hFile(0),m_hMap(0)
+    MyFileMapManager():m_nDataCount(0),m_pData(0),m_hFile(0),m_hMap(0), m_nIncrease(4096)
     {
         memset(m_strStructName, 0, 64);
+        memset(m_strPath, 0, 256);
         const type_info& typeinfo = typeid(T);
         const char* className = typeinfo.name();
         strcpy(&m_strStructName[0], className);
     }
+
     virtual ~MyFileMapManager()
     {
         if(m_pMapViewBegin)
@@ -28,6 +30,7 @@ public:
         if(m_hFile)
             CloseHandle(m_hFile);
     }
+
     void MapToFile(int& iErr, TCHAR* pPath)
     {
         if(pPath == NULL)
@@ -40,11 +43,13 @@ public:
         if(iErr != ID_SUCCESS)
             return;
 
+        strcpy((char*)m_strPath, (char*)pPath);
+
         m_nDataCount = GetDataCountFromFile(iErr, pPath);
         if(iErr != ID_SUCCESS)
             return;
-        m_n2 = m_nDataCount + 1024;
 
+        m_n2 = m_nDataCount + 1024;
         m_hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
             NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (m_hFile == INVALID_HANDLE_VALUE)
@@ -73,7 +78,7 @@ public:
         int* pTemp = (int*)m_pMapViewBegin;
         m_nDataCount = *pTemp;
         pTemp++;
-        if(strcmp(m_strStructName, (char*)pTemp) != 0)
+        if(strcmp(m_strStructName, (TCHAR*)pTemp) != 0)
         {
             int iErr = ID_ERROR_NOT_CORRECT_DATATYPE;
             return;
@@ -82,6 +87,7 @@ public:
         iErr = ID_SUCCESS;
         return;
     }
+
     void AddItem(int& iErr, const T* pItem)
     {
         assert(pItem);
@@ -91,14 +97,12 @@ public:
         }
         m_nDataCount++;
         memcpy(m_pMapViewBegin, &m_nDataCount, 4);
-        FlushViewOfFile(m_pMapViewBegin, 4);
-        FlushViewOfFile((LPVOID)(m_pData+m_nDataCount), sizeof(T));
         if(m_nDataCount == m_n2-2)
         {
             UnmapViewOfFile(m_pMapViewBegin);
             CloseHandle(m_hMap);
 
-            m_n2 += 1024;
+            m_n2 += m_nIncrease;
             m_hMap = CreateFileMapping(m_hFile, NULL, PAGE_READWRITE, 0, 68+sizeof(T)*m_n2, NULL);
             if (m_hMap == NULL)
             {
@@ -115,6 +119,17 @@ public:
                 CloseHandle(m_hFile);
                 return;
             }
+
+            int* pTemp = (int*)m_pMapViewBegin;
+            pTemp++;
+            if(strcmp(m_strStructName, (TCHAR*)pTemp) != 0)
+            {
+                int iErr = ID_ERROR_NOT_CORRECT_DATATYPE;
+                return;
+            }
+            m_pData = ((T*)pTemp) + 16;
+            iErr = ID_SUCCESS;
+            return;
         }
     }
 
@@ -151,6 +166,7 @@ protected:
         CloseHandle(hFile);
         iErr = ID_SUCCESS;
     }
+
     int GetDataCountFromFile(int &iErr, TCHAR* pPath)
     {
         HANDLE hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
@@ -197,17 +213,19 @@ protected:
         return nDataCount;
     }
 
+    int GetIncrease() { return m_nIncrease; }
+    void SetIncrease(int nIncrease) { m_nIncrease = nIncrease; }
 protected:
     LPVOID m_pMapViewBegin;
-    T* m_pData;
-private:
     int m_nDataCount;
+    T* m_pData;
+    int m_nIncrease;
     char m_strStructName[64];
+    TCHAR m_strPath[256];
     HANDLE m_hFile;
     HANDLE m_hMap;
     int m_n2;
 };
-
 
 
 

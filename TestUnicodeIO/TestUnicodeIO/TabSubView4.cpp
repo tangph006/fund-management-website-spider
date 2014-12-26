@@ -46,6 +46,8 @@ void CTabSubView4::OnSize(UINT nType, int cx, int cy)
     LayoutControl(GetDlgItem(IDC_BTN_SORT), TopRight, TopRight, cx, cy);
     LayoutControl(GetDlgItem(IDC_COMBO_SORTTYPE), TopRight, TopRight, cx, cy);
     LayoutControl(GetDlgItem(IDC_STATIC_ELAPSED), TopRight, TopRight, cx, cy);
+    LayoutControl(GetDlgItem(IDC_STATIC_TIMESTART), TopRight, TopRight, cx, cy);
+    LayoutControl(GetDlgItem(IDC_STATIC_TIMEEND), TopRight, TopRight, cx, cy);
     if(nType != SIZE_MINIMIZED)
     {
         m_oldCx = cx;
@@ -210,20 +212,16 @@ void CTabSubView4::OnBnClickedBtnRefresh()
     InitData();
 }
 
-
 void CTabSubView4::OnBnClickedBtnSort()
 {
     CString strSortType;
     GetDlgItemText(IDC_COMBO_SORTTYPE, strSortType);
     ULONGLONG timeTick = GetTickCount64();
 
-    LARGE_INTEGER time_start;
-    LARGE_INTEGER time_end;
-    double dqFreq;
-    LARGE_INTEGER f;
-    QueryPerformanceFrequency(&f);
-    dqFreq=(double)f.QuadPart;
-    QueryPerformanceCounter(&time_start);
+    LARGE_INTEGER startCount, endCount, freq;
+    SYSTEMTIME startTime, endTime;
+    GetLocalTime(&startTime);
+    QueryPerformanceCounter(&startCount);
     if(strSortType.CompareNoCase(_T("bs")) == 0)
     {
         VecIntSorter::bs(m_vInt);
@@ -237,10 +235,18 @@ void CTabSubView4::OnBnClickedBtnSort()
     {
         std::sort(m_vInt.begin(), m_vInt.end());
     }
-    QueryPerformanceCounter(&time_end);
-    CString strElapsed;
-    strElapsed.Format(_T("%.06fs"), (time_end.QuadPart-time_start.QuadPart)/dqFreq);
-    GetDlgItem(IDC_STATIC_ELAPSED)->SetWindowText(strElapsed);
+    QueryPerformanceCounter(&endCount);
+    QueryPerformanceFrequency(&freq);
+    GetLocalTime(&endTime);
+    CString strTime;
+    strTime.Format(_T("%.06fs"), (endCount.QuadPart-startCount.QuadPart)/(double)freq.QuadPart);
+    GetDlgItem(IDC_STATIC_ELAPSED)->SetWindowText(strTime);
+    strTime.Format(_T("%04d-%02d-%02d %02d:%02d:%02d.%d"), startTime.wYear, startTime.wMonth,
+        startTime.wDay, startTime.wHour, startTime.wMinute, startTime.wSecond, startTime.wMilliseconds);
+    GetDlgItem(IDC_STATIC_TIMESTART)->SetWindowText(strTime);
+    strTime.Format(_T("%04d-%02d-%02d %02d:%02d:%02d.%d"), endTime.wYear, endTime.wMonth,
+        endTime.wDay, endTime.wHour, endTime.wMinute, endTime.wSecond, endTime.wMilliseconds);
+    GetDlgItem(IDC_STATIC_TIMEEND)->SetWindowText(strTime);
 
     CRect rcListVirtual;
     m_lstVirtual.GetWindowRect(rcListVirtual);

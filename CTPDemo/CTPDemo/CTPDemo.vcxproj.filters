@@ -43,6 +43,9 @@
       <Filter>MyControl</Filter>
     </ClInclude>
     <ClInclude Include="DataStorage.h" />
+    <ClInclude Include="MyFileMapManager.h">
+      <Filter>FileMapManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CTPDemo.rc" />
@@ -61,6 +64,9 @@
     </Filter>
     <Filter Include="Common">
       <UniqueIdentifier>{05e47bce-4844-4431-9678-35ca99b3f8f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FileMapManager">
+      <UniqueIdentifier>{7ab33184-7c1c-4a38-b5fe-e93b0fabb604}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

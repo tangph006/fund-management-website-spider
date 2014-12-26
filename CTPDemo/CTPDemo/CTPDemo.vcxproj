@@ -111,6 +111,7 @@
     <ClInclude Include="CTPDemoDlg.h" />
     <ClInclude Include="DataStorage.h" />
     <ClInclude Include="FloatEdit.h" />
+    <ClInclude Include="MyFileMapManager.h" />
     <ClInclude Include="MyListCtrl.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
