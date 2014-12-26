@@ -5,7 +5,9 @@
 #include "afxwin.h"
 #include <string>
 #include <vector>
+#include "MyFileMapManager.h"
 #include "..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h"
+#include "ThostFtdcUserApiStruct.h"
 
 class CCTPDemoDlg : public CDialogEx, public CThostFtdcMdSpi
 {
@@ -73,6 +75,7 @@ private:
     void AppendMsg(CString strMsg);
 public:
     int m_nRequestID;
+    MyFileMapManager<CThostFtdcDepthMarketDataField> m_data;
 protected:
     CThostFtdcMdApi* m_pMdApi;
     TThostFtdcBrokerIDType m_brokerID;

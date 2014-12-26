@@ -90,6 +90,9 @@ BOOL CCTPDemoDlg::OnInitDialog()
 
     DisableAllBtns();
     GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(TRUE);
+
+    MoveWindow(0, 0, 380, 200);
+
     return TRUE;
 }
 
@@ -216,6 +219,13 @@ void CCTPDemoDlg::OnButtonStart()
     DisableAllBtns();
     GetDlgItem(IDC_BTN_STOP)->EnableWindow(TRUE);
     GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
+
+    SYSTEMTIME sysTime;
+    GetLocalTime(&sysTime);
+    CString strFile;
+    strFile.Format(_T("%4d-%2d-%2d.txt"), sysTime.wYear, sysTime.wMonth, sysTime.wDay);
+    int iErr = ID_SUCCESS;
+    m_data.MapToFile(iErr, strFile.GetBuffer());
     StartSubscribe();
 }
 
@@ -225,6 +235,7 @@ void CCTPDemoDlg::OnButtonStop()
     GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
     GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
     StopSubscribe();
+    m_data.UnMapFromFile();
 }
 
 
@@ -241,9 +252,9 @@ void CCTPDemoDlg::OnButtonLogin()
     GetDlgItemText(IDC_EDIT_CODE, strItem);
     m_vInstrumentID.clear();
     m_vInstrumentID.push_back(strItem);
-    m_vInstrumentID.push_back(_T("CU1501"));
-    m_vInstrumentID.push_back(_T("TA1501"));
-    m_vInstrumentID.push_back(_T("WT1501"));
+//     m_vInstrumentID.push_back(_T("CU1501"));
+//     m_vInstrumentID.push_back(_T("TA1501"));
+//     m_vInstrumentID.push_back(_T("WT1501"));
 
     CString strIP, strPort;
     BYTE b1,b2,b3,b4;
@@ -372,11 +383,9 @@ void CCTPDemoDlg::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpec
 
 void CCTPDemoDlg::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
-    static int i=0;
-    i++;
-    CString strMsg;
-    strMsg.Format(_T("OnRtnDepthMarketData(): %d"), i);
-    AppendMsg(strMsg);
+    AppendMsg(_T("OnRtnDepthMarketData()"));
+    int iErr = ID_SUCCESS;
+    m_data.AddItem(iErr, pDepthMarketData);
 }
 
 void CCTPDemoDlg::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
