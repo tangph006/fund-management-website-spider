@@ -14,6 +14,7 @@
       <Filter>MyControl</Filter>
     </ClCompile>
     <ClCompile Include="DataStorage.cpp" />
+    <ClCompile Include="MyMdSpi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CTPDemo.h" />
@@ -46,6 +47,7 @@
     <ClInclude Include="MyFileMapManager.h">
       <Filter>FileMapManager</Filter>
     </ClInclude>
+    <ClInclude Include="MyMdSpi.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CTPDemo.rc" />

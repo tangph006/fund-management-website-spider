@@ -19,6 +19,8 @@ public:
     CStockListCtrl();
     virtual ~CStockListCtrl();
 protected:
+    afx_msg void OnPaint();
+    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     virtual void PreSubclassWindow();
     afx_msg void OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult);
     afx_msg BOOL OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult);

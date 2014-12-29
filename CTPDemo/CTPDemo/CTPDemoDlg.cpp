@@ -12,7 +12,6 @@ CCTPDemoDlg::CCTPDemoDlg(CWnd* pParent)
     , CThostFtdcMdSpi()
 {
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-    ClearMyParts();
     m_vecMsg.clear();
 }
 
@@ -66,6 +65,8 @@ BOOL CCTPDemoDlg::OnInitDialog()
     SetIcon(m_hIcon, TRUE);
     SetIcon(m_hIcon, FALSE);
 
+    m_mdSpi.m_observers.push_back(this->GetSafeHwnd());
+
     m_listResult.SetParent(this);
     DWORD dwStyle = m_listResult.GetExtendedStyle();
     dwStyle |= LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP|LVS_EX_GRIDLINES;
@@ -91,7 +92,7 @@ BOOL CCTPDemoDlg::OnInitDialog()
     DisableAllBtns();
     GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(TRUE);
 
-    MoveWindow(0, 0, 380, 200);
+    MoveWindow(0, 0, 660, 200);
 
     return TRUE;
 }
@@ -202,7 +203,8 @@ void CCTPDemoDlg::LayoutControl(CWnd* pCtrl, LayoutRef refTopLeft, LayoutRef ref
 
 BOOL CCTPDemoDlg::PreTranslateMessage(MSG* pMsg)
 {
-    if(pMsg->message == WM_KEYDOWN) {
+    if(pMsg->message == WM_KEYDOWN)
+    {
         switch(pMsg->wParam)
         {
         case VK_RETURN:
@@ -219,14 +221,8 @@ void CCTPDemoDlg::OnButtonStart()
     DisableAllBtns();
     GetDlgItem(IDC_BTN_STOP)->EnableWindow(TRUE);
     GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
-
-    SYSTEMTIME sysTime;
-    GetLocalTime(&sysTime);
-    CString strFile;
-    strFile.Format(_T("%4d-%2d-%2d.txt"), sysTime.wYear, sysTime.wMonth, sysTime.wDay);
     int iErr = ID_SUCCESS;
-    m_data.MapToFile(iErr, strFile.GetBuffer());
-    StartSubscribe();
+    m_mdSpi.StartSubscribe(iErr);
 }
 
 void CCTPDemoDlg::OnButtonStop()
@@ -234,42 +230,140 @@ void CCTPDemoDlg::OnButtonStop()
     DisableAllBtns();
     GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
     GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
-    StopSubscribe();
-    m_data.UnMapFromFile();
+    int iErr = ID_SUCCESS;
+    m_mdSpi.StopSubscribe(iErr);
 }
 
 
 void CCTPDemoDlg::OnButtonLogin()
 {
-    ClearMyParts();
+    //m_mdSpi.ClearMyParts();
     CString strItem;
     GetDlgItemText(IDC_EDIT_BROKERID, strItem);
-    SetBrokerID(strItem.GetBuffer());
+    m_mdSpi.SetBrokerID(strItem.GetBuffer());
     GetDlgItemText(IDC_EDIT_USERID, strItem);
-    SetInvestorID(strItem.GetBuffer());
+    m_mdSpi.SetInvestorID(strItem.GetBuffer());
     GetDlgItemText(IDC_EDIT_PASSWORD, strItem);
-    SetPassword(strItem.GetBuffer());
-    GetDlgItemText(IDC_EDIT_CODE, strItem);
-    m_vInstrumentID.clear();
-    m_vInstrumentID.push_back(strItem);
-//     m_vInstrumentID.push_back(_T("CU1501"));
-//     m_vInstrumentID.push_back(_T("TA1501"));
-//     m_vInstrumentID.push_back(_T("WT1501"));
+    m_mdSpi.SetPassword(strItem.GetBuffer());
+    TThostFtdcInstrumentIDType iID;
+    GetDlgItemText(IDC_EDIT_CODE, iID, sizeof(iID)-1);
+    int iErr = ID_SUCCESS;
+    m_mdSpi.AddIntrusmentType(iErr, std::string(iID));
+    if(iErr != ID_SUCCESS)
+        return;
 
     CString strIP, strPort;
     BYTE b1,b2,b3,b4;
     m_ipctrlIP.GetAddress(b1,b2,b3,b4);
     strIP.Format(_T("%u.%u.%u.%u"), b1, b2, b3, b4);
     m_editPort.GetWindowText(strPort);
-    m_addr1.Format(_T("tcp://%s:%s"), strIP, strPort);
-    m_addr2.Format(_T("tcp://%s:%s"), strIP, strPort);
-    Login();
+    CString strAddr1;
+    strAddr1.Format(_T("tcp://%s:%s"), strIP, strPort);
+    m_mdSpi.SetAddr1(strAddr1.GetBuffer());
+    CString strAddr2;
+    strAddr2.Format(_T("tcp://%s:%s"), strIP, strPort);
+    m_mdSpi.SetAddr2(strAddr2.GetBuffer());
+    m_mdSpi.Login(iErr);
+    if(iErr != ID_SUCCESS)
+        return;
+}
+
+LRESULT CCTPDemoDlg::DefWindowProc(UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+    switch(Msg)
+    {
+    case WM_OnFrontConnected:
+        AppendMsg(_T("WM_OnFrontConnected"));
+        break;
+    case WM_OnFrontDisconnected:
+        AppendMsg(_T("WM_OnFrontDisconnected"));
+        break;
+    case WM_OnHeartBeatWarning:
+        AppendMsg(_T("WM_OnHeartBeatWarning"));
+        break;
+    case WM_OnRspUserLogin:
+        {
+            AppendMsg(_T("WM_OnRspUserLogin"));
+            EnableUsernameCtrls(FALSE);
+            DisableAllBtns();
+            GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
+            GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
+        }
+        break;
+    case WM_OnRspUserLogout:
+        {
+            AppendMsg(_T("WM_OnRspUserLogout"));
+            EnableUsernameCtrls(TRUE);
+            DisableAllBtns();
+            GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(TRUE);
+        }
+        break;
+    case WM_OnRspError:
+        {
+            CThostFtdcRspInfoField *pRspInfo = (CThostFtdcRspInfoField*)wParam;
+            CString strMsg;
+            strMsg.Format(_T("WM_OnRspError: id: %d, msg: %s."), pRspInfo->ErrorID, pRspInfo->ErrorMsg);
+            AppendMsg(strMsg);
+            delete pRspInfo;
+        }
+        break;
+    case WM_OnRspSubMarketData:
+        {
+            AppendMsg(_T("WM_OnRspSubMarketData"));
+            DisableAllBtns();
+            GetDlgItem(IDC_BTN_STOP)->EnableWindow(TRUE);
+            GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
+        }
+        break;
+    case WM_OnRspUnSubMarketData:
+        {
+            AppendMsg(_T("WM_OnRspUnSubMarketData"));
+            DisableAllBtns();
+            GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
+            GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
+        }
+        break;
+    case WM_OnRspSubForQuoteRsp:
+        AppendMsg(_T("WM_OnRspSubForQuoteRsp"));
+        break;
+    case WM_OnRspUnSubForQuoteRsp:
+        AppendMsg(_T("WM_OnRspUnSubForQuoteRsp"));
+        break;
+    case WM_OnRtnDepthMarketData:
+        {
+            extern MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
+            extern HANDLE g_totalDataMutex;
+            int iErr = ID_SUCCESS;
+            WaitForSingleObject(g_totalDataMutex, INFINITE);
+            int nDataCount = (int)wParam;
+            CThostFtdcDepthMarketDataField* pMarketData = g_totalData.GetDataByIndex(nDataCount-1);
+            CString strMsg;
+            strMsg.Format(_T("WM_OnRtnDepthMarketData: %s,%.2f,%.2f"), 
+                pMarketData->ActionDay,
+                pMarketData->AskPrice1,
+                pMarketData->BidPrice1);
+            AppendMsg(strMsg);
+            ReleaseMutex(g_totalDataMutex);
+        }
+        break;
+    case WM_OnRtnForQuoteRsp:
+        AppendMsg(_T("WM_OnRtnForQuoteRsp"));
+        break;
+    default:
+        break;
+    }
+    return CDialog::DefWindowProc(Msg, wParam, lParam);
 }
 
 void CCTPDemoDlg::OnBnClickedBtnLogout()
 {
-    StopSubscribe();
-    Logout();
+    int iErr = ID_SUCCESS;
+    m_mdSpi.StopSubscribe(iErr);
+    if(iErr != ID_SUCCESS)
+        return;
+    m_mdSpi.Logout(iErr);
+    if(iErr != ID_SUCCESS)
+        return;
     EnableUsernameCtrls(TRUE);
 }
 
@@ -295,163 +389,9 @@ void CCTPDemoDlg::EnableUsernameCtrls(BOOL bEnable)
     GetDlgItem(IDC_EDIT_PASSWORD)->EnableWindow(bEnable);
 }
 
-/////////////////////////////////////////////engine start/////////////////////////////////////////////
-
-void CCTPDemoDlg::OnFrontConnected()
-{
-    CThostFtdcReqUserLoginField req;
-    memset(&req, 0, sizeof(req));
-    strcpy(req.BrokerID, m_brokerID);
-    strcpy(req.UserID, m_investorID);
-    strcpy(req.Password, m_password);
-    m_pMdApi->ReqUserLogin(&req, m_nRequestID);
-    m_nRequestID++;
-    AppendMsg(_T("OnFrontConnected()"));
-}
-
-void CCTPDemoDlg::OnFrontDisconnected(int nReason)
-{
-    AppendMsg(_T("OnFrontDisconnected()"));
-}
-
-void CCTPDemoDlg::OnHeartBeatWarning(int nTimeElapse)
-{
-    AppendMsg(_T("OnHeartBeatWarning()"));
-}
-
-void CCTPDemoDlg::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    AppendMsg(_T("OnRspUserLogin()"));
-    if(bIsLast && pRspInfo->ErrorID==0)
-    {
-        EnableUsernameCtrls(FALSE);
-        DisableAllBtns();
-        GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
-        GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
-    }
-}
-
-void CCTPDemoDlg::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    AppendMsg(_T("OnRspUserLogout()"));
-    if(bIsLast && pRspInfo->ErrorID==0)
-    {
-        EnableUsernameCtrls(TRUE);
-        DisableAllBtns();
-        GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(TRUE);
-    }
-}
-
-void CCTPDemoDlg::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    CString strMsg;
-    strMsg.Format(_T("OnRspError(), code: %d, message: %s"), pRspInfo->ErrorID, pRspInfo->ErrorMsg);
-    AppendMsg(strMsg);
-}
-
-void CCTPDemoDlg::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    AppendMsg(_T("OnRspSubMarketData()"));
-    if(bIsLast && pRspInfo->ErrorID==0)
-    {
-        DisableAllBtns();
-        GetDlgItem(IDC_BTN_STOP)->EnableWindow(TRUE);
-        GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
-    }
-}
-
-void CCTPDemoDlg::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    AppendMsg(_T("OnRspUnSubMarketData()"));
-    if(bIsLast && pRspInfo->ErrorID==0)
-    {
-        DisableAllBtns();
-        GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
-        GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
-    }
-}
-
-void CCTPDemoDlg::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    AppendMsg(_T("OnRspSubForQuoteRsp()"));
-}
-
-void CCTPDemoDlg::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    AppendMsg(_T("OnRspUnSubForQuoteRsp()"));
-}
-
-void CCTPDemoDlg::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
-{
-    AppendMsg(_T("OnRtnDepthMarketData()"));
-    int iErr = ID_SUCCESS;
-    m_data.AddItem(iErr, pDepthMarketData);
-}
-
-void CCTPDemoDlg::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
-{
-    AppendMsg(_T("OnRtnForQuoteRsp()"));
-}
-
-void CCTPDemoDlg::StartSubscribe()
-{
-    size_t nCount = m_vInstrumentID.size();
-    char** ppInstrumentID = new char*[nCount];
-    for(size_t i=0; i<nCount; i++)
-    {
-        CString str = m_vInstrumentID.at(i);
-        ppInstrumentID[i] = new char[str.GetLength()+1];
-        strcpy(ppInstrumentID[i], str.GetBuffer());
-        ppInstrumentID[i][str.GetLength()] = 0;
-    }
-
-    m_pMdApi->UnSubscribeMarketData(ppInstrumentID, nCount);
-    m_pMdApi->SubscribeMarketData(ppInstrumentID, nCount);
-}
-
-void CCTPDemoDlg::StopSubscribe()
-{
-    size_t nCount = m_vInstrumentID.size();
-    char** ppInstrumentID = new char*[nCount];
-    for(size_t i=0; i<nCount; i++)
-    {
-        CString str = m_vInstrumentID.at(i);
-        ppInstrumentID[i] = new char[str.GetLength()+1];
-        strcpy(ppInstrumentID[i], str.GetBuffer());
-        ppInstrumentID[i][str.GetLength()] = 0;
-    }
-    m_pMdApi->UnSubscribeMarketData(ppInstrumentID, nCount);
-}
-
-void CCTPDemoDlg::Login()
-{
-    m_pMdApi = CThostFtdcMdApi::CreateFtdcMdApi("./thostmduserapi.dll");
-    m_pMdApi->RegisterSpi(this);
-    m_pMdApi->RegisterFront(m_addr1.GetBuffer());
-    m_pMdApi->RegisterFront(m_addr2.GetBuffer());
-    m_pMdApi->Init();
-}
-
-void CCTPDemoDlg::Logout()
-{
-    CThostFtdcUserLogoutField logout;
-    memset(&logout, 0, sizeof(logout));
-    strcpy(logout.BrokerID, m_brokerID);
-    strcpy(logout.UserID, m_investorID);
-    m_pMdApi->ReqUserLogout(&logout, m_nRequestID);
-    m_nRequestID++;
-}
-
-void CCTPDemoDlg::ClearMyParts()
-{
-    memset(m_brokerID, 0, sizeof(m_brokerID));
-    memset(m_investorID, 0, sizeof(m_investorID));
-    memset(m_password, 0, sizeof(m_password));
-    m_vInstrumentID.clear();
-}
-
 void CCTPDemoDlg::AppendMsg(CString strMsg)
 {
+    int scrollPos = GetScrollPos(SB_HORZ);
     m_vecMsg.push_back(strMsg);
     m_listResult.SetItemCount(m_vecMsg.size());
     m_listResult.EnsureVisible(m_vecMsg.size()-1, FALSE);

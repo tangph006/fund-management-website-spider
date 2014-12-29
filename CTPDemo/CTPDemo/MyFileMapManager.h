@@ -31,32 +31,9 @@ public:
         UnMapFromFile();
     }
 
-    void UnMapFromFile() 
-    {
-        if(m_pMapViewBegin)
-        {
-            UnmapViewOfFile(m_pMapViewBegin);
-            m_pMapViewBegin = NULL;
-        }
-        if(m_hMap)
-        {
-            CloseHandle(m_hMap);
-            m_hMap = NULL;
-        }
-
-        if(m_hFile)
-        {
-            if(m_nMappedDataCount > m_dataInfo.m_nDataCount)
-            {
-                //SetEndOfFile(m_hFile);
-            }
-            CloseHandle(m_hFile);
-            m_hFile = NULL;
-        }
-    }
-
     void MapToFile(int& iErr, TCHAR* pPath)
     {
+        UnMapFromFile();
         if(pPath == NULL)
         {
             iErr = ID_ERROR_NULL_POINTER;
@@ -87,7 +64,31 @@ public:
         return;
     }
 
-    void AddItem(int& iErr, const T* pItem)
+    void UnMapFromFile() 
+    {
+        if(m_pMapViewBegin)
+        {
+            UnmapViewOfFile(m_pMapViewBegin);
+            m_pMapViewBegin = NULL;
+        }
+        if(m_hMap)
+        {
+            CloseHandle(m_hMap);
+            m_hMap = NULL;
+        }
+
+        if(m_hFile)
+        {
+            if(m_nMappedDataCount > m_dataInfo.m_nDataCount)
+            {
+                //SetEndOfFile(m_hFile);
+            }
+            CloseHandle(m_hFile);
+            m_hFile = NULL;
+        }
+    }
+
+    int AddItem(int& iErr, const T* pItem)
     {
         assert(pItem);
         memcpy(&m_pData[m_dataInfo.m_nDataCount], pItem, sizeof(T));
@@ -100,10 +101,23 @@ public:
             m_hMap = NULL;
             m_nMappedDataCount = GetNextSize(m_nMappedDataCount);
             CreateAndMap(iErr);
-            return;
+            return m_dataInfo.m_nDataCount;
         }
+        iErr = ID_SUCCESS;
+        return m_dataInfo.m_nDataCount;
     }
 
+    int GetDataCount()
+    {
+        return m_dataInfo.m_nDataCount;
+    }
+
+    T* GetDataByIndex(int iIndex)
+    {
+        return m_pData+iIndex;
+    }
+
+protected:
     void CreateAndMap(int &iErr)
     {
         int sizeOfT = sizeof(T);
@@ -132,7 +146,6 @@ public:
         return;
     }
 
-protected:
     void CreateFileIfNotExist(int &iErr, TCHAR* pPath)
     {
         HANDLE hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
@@ -201,7 +214,6 @@ protected:
     }
 protected:
     tagDataInfo m_dataInfo;
-
     LPVOID m_pMapViewBegin;
     int m_nMappedDataCount;
     T* m_pData;
