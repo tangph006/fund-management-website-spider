@@ -3,6 +3,8 @@
 #include "TabSubView4.h"
 #include <algorithm>
 
+static const UINT WM_LISTADDITEM = 1888;
+
 IMPLEMENT_DYNAMIC(CTabSubView4, CDialog)
 
 CTabSubView4::CTabSubView4(CWnd* pParent) : CDialog(CTabSubView4::IDD, pParent)
@@ -60,7 +62,7 @@ BOOL CTabSubView4::OnInitDialog()
 {
     CDialog::OnInitDialog();
     GetDlgItem(IDC_EDIT_DATACOUNT)->SetWindowText(_T("1000"));
-    InitData();
+    RefreshData();
 
     DWORD dwStyle = m_lstVirtual.GetExtendedStyle();
     m_lstVirtual.SetExtendedStyle(dwStyle|LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP|LVS_EX_GRIDLINES);
@@ -146,23 +148,6 @@ void CTabSubView4::LayoutControl(CWnd* pCtrl, LayoutRef refTopLeft, LayoutRef re
     }
 }
 
-void CTabSubView4::InitData()
-{
-    SYSTEMTIME sysTime;
-    GetSystemTime(&sysTime);
-    srand(sysTime.wMilliseconds%100);
-
-    CString strEdit;
-    GetDlgItemText(IDC_EDIT_DATACOUNT, strEdit);
-    int nCount = wcstol(strEdit, NULL, 10);
-    m_vInt.clear();
-    for(int i=0; i<nCount; i++)
-    {
-        m_vInt.push_back(rand()%nCount);
-    }
-    m_lstVirtual.SetItemCount(nCount);
-}
-
 void CTabSubView4::OnLvnGetdispinfoListVirtual(NMHDR *pNMHDR, LRESULT *pResult)
 {
     NMLVDISPINFO *pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
@@ -206,10 +191,52 @@ void CTabSubView4::OnLvnGetdispinfoListVirtual(NMHDR *pNMHDR, LRESULT *pResult)
     *pResult = 0;
 }
 
+static DWORD WINAPI ThreadProc(LPVOID lpParam)
+{
+    for(int i=0; i<100; i++)
+    {
+        Sleep(163);
+        ::PostMessage((HWND)lpParam, WM_LISTADDITEM, NULL, NULL);
+    }
+    return 0;
+}
 
 void CTabSubView4::OnBnClickedBtnRefresh()
 {
-    InitData();
+    CreateThread(NULL, 0, ThreadProc, (LPVOID)GetSafeHwnd(), 0, NULL);
+}
+
+void CTabSubView4::RefreshData()
+{
+    SYSTEMTIME sysTime;
+    GetSystemTime(&sysTime);
+    srand(sysTime.wMilliseconds%100);
+
+    CString strEdit;
+    GetDlgItemText(IDC_EDIT_DATACOUNT, strEdit);
+    int nCount = wcstol(strEdit, NULL, 10);
+    int nOriCount = (int)m_vInt.size();
+    int nDiffCount = nCount - nOriCount;
+    for(int i=0; i<nDiffCount; i++)
+    {
+        int randValue = rand();
+        m_vInt.push_back(randValue%nCount);
+    }
+    m_lstVirtual.SetItemCount(nCount);
+    int nScrollPos = m_lstVirtual.GetScrollPos(SB_VERT);
+
+    POSITION pos = m_lstVirtual.GetFirstSelectedItemPosition();
+    m_lstVirtual.SetItemState((int)pos-1, 0, -1);
+    int nextPos;
+    do
+    {
+        nextPos = m_lstVirtual.GetNextSelectedItem(pos);
+        m_lstVirtual.SetItemState(nextPos-1, 0, -1);
+    }
+    while(nextPos >=0);
+
+    if((nCount-nScrollPos) < 20)
+        ((CStockListCtrl*)GetDlgItem(IDC_LIST_VIRTUAL))->EnsureVisible(nCount-1, FALSE);
 }
 
 void CTabSubView4::OnBnClickedBtnSort()
@@ -252,4 +279,25 @@ void CTabSubView4::OnBnClickedBtnSort()
     m_lstVirtual.GetWindowRect(rcListVirtual);
     ScreenToClient(rcListVirtual);
     InvalidateRect(rcListVirtual);
+}
+
+LRESULT CTabSubView4::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch(message)
+    {
+    case WM_LISTADDITEM:
+        {
+            CString strEdit;
+            GetDlgItemText(IDC_EDIT_DATACOUNT, strEdit);
+            int nCount = wcstol(strEdit, NULL, 10);
+            nCount++;
+            strEdit.Format(_T("%d"), nCount);
+            SetDlgItemText(IDC_EDIT_DATACOUNT, strEdit);
+            RefreshData();
+        }
+        break;
+    default:
+        break;
+    }
+    return CDialog::DefWindowProc(message, wParam, lParam);
 }

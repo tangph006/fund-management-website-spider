@@ -13,6 +13,8 @@ CStockListCtrl::~CStockListCtrl()
 
 
 BEGIN_MESSAGE_MAP(CStockListCtrl, CListCtrl)
+    ON_WM_PAINT()
+    ON_WM_ERASEBKGND()
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnNMCustomdraw)
     ON_NOTIFY_REFLECT_EX(LVN_ITEMCHANGED, OnLvnItemchanged)
 END_MESSAGE_MAP()
@@ -154,6 +156,33 @@ void CStockListCtrl::PreSubclassWindow()
 {
     InitListFont();
     CListCtrl::PreSubclassWindow();
+}
+
+void CStockListCtrl::OnPaint()
+{
+    CPaintDC dc(this);
+    CRect rect;
+    CRect headerRect;
+    CDC MenDC;
+    CBitmap MemMap;
+
+    GetClientRect(&rect);
+    GetDlgItem(0)->GetWindowRect(&headerRect);
+    MenDC.CreateCompatibleDC(&dc);
+    MemMap.CreateCompatibleBitmap(&dc, rect.Width(), rect.Height());
+    MenDC.SelectObject(&MemMap);
+    MenDC.FillSolidRect(&rect, RGB(255,255,255));
+
+    // default paint
+    DefWindowProc(WM_PAINT,(WPARAM)MenDC.m_hDC,(LPARAM)0);
+    dc.BitBlt(0, headerRect.Height(), rect.Width(), rect.Height(), &MenDC, 0, headerRect.Height(), SRCCOPY);
+    MenDC.DeleteDC();
+    MemMap.DeleteObject();
+}
+
+BOOL CStockListCtrl::OnEraseBkgnd( CDC* pDC )
+{
+    return FALSE;
 }
 
 

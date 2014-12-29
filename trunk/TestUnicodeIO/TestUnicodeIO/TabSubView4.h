@@ -303,11 +303,12 @@ protected:
     std::vector<int> m_vInt;
 
 protected:
+    virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
     virtual void DoDataExchange(CDataExchange* pDX);
     afx_msg void OnSize(UINT nType, int cx, int cy);
     virtual BOOL OnInitDialog();
     virtual BOOL PreTranslateMessage(MSG* pMsg);
-    void InitData();
+    void RefreshData();
     DECLARE_MESSAGE_MAP()
 private:
     int m_oldCx;
