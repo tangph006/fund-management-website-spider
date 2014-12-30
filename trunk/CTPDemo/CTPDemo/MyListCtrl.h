@@ -12,7 +12,7 @@ protected:
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     virtual void PreSubclassWindow();
     afx_msg void OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult);
-
+    afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 private:
     void Init();
     void InvalidateItemRect(int nItem);

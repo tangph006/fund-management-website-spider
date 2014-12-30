@@ -331,19 +331,7 @@ LRESULT CCTPDemoDlg::DefWindowProc(UINT Msg, WPARAM wParam, LPARAM lParam)
         break;
     case WM_OnRtnDepthMarketData:
         {
-            extern MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
-            extern HANDLE g_totalDataMutex;
-            int iErr = ID_SUCCESS;
-            WaitForSingleObject(g_totalDataMutex, INFINITE);
-            int nDataCount = (int)wParam;
-            CThostFtdcDepthMarketDataField* pMarketData = g_totalData.GetDataByIndex(nDataCount-1);
-            CString strMsg;
-            strMsg.Format(_T("WM_OnRtnDepthMarketData: %s,%.2f,%.2f"), 
-                pMarketData->ActionDay,
-                pMarketData->AskPrice1,
-                pMarketData->BidPrice1);
-            AppendMsg(strMsg);
-            ReleaseMutex(g_totalDataMutex);
+            MyOnRtnDepthMarketData((int)wParam);
         }
         break;
     case WM_OnRtnForQuoteRsp:
@@ -391,10 +379,17 @@ void CCTPDemoDlg::EnableUsernameCtrls(BOOL bEnable)
 
 void CCTPDemoDlg::AppendMsg(CString strMsg)
 {
-    int scrollPos = GetScrollPos(SB_HORZ);
     m_vecMsg.push_back(strMsg);
-    m_listResult.SetItemCount(m_vecMsg.size());
-    m_listResult.EnsureVisible(m_vecMsg.size()-1, FALSE);
+    int nCount = (int)m_vecMsg.size();
+    int minPos, maxPos, curPos;
+    curPos = m_listResult.GetScrollPos(SB_VERT);
+    m_listResult.GetScrollRange(SB_VERT, &minPos, &maxPos);
+    m_listResult.SetItemCount(nCount);
+    if((maxPos-minPos) > 0 &&
+        (maxPos-curPos)/(maxPos-minPos) < 0.05f)
+    {
+        m_listResult.EnsureVisible(nCount-1, TRUE);
+    }
 }
 
 void CCTPDemoDlg::OnLvnGetdispinfoListResult(NMHDR *pNMHDR, LRESULT *pResult)
@@ -408,4 +403,20 @@ void CCTPDemoDlg::OnLvnGetdispinfoListResult(NMHDR *pNMHDR, LRESULT *pResult)
         lstrcpy(pDispInfo->item.pszText, m_vecMsg[nItem]);
     }
     *pResult = 0;
+}
+
+void CCTPDemoDlg::MyOnRtnDepthMarketData(int nDataCount)
+{
+    extern MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
+    extern HANDLE g_totalDataMutex;
+    int iErr = ID_SUCCESS;
+    WaitForSingleObject(g_totalDataMutex, INFINITE);
+    CThostFtdcDepthMarketDataField* pMarketData = g_totalData.GetDataByIndex(nDataCount-1);
+    CString strMsg;
+    strMsg.Format(_T("WM_OnRtnDepthMarketData: %s,%.2f,%.2f"), 
+        pMarketData->ActionDay,
+        pMarketData->AskPrice1,
+        pMarketData->BidPrice1);
+    AppendMsg(strMsg);
+    ReleaseMutex(g_totalDataMutex);
 }

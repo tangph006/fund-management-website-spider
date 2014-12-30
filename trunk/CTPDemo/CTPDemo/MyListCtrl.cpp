@@ -14,6 +14,7 @@ CMyListCtrl::~CMyListCtrl(void)
 BEGIN_MESSAGE_MAP(CMyListCtrl, CListCtrl)
     ON_WM_PAINT()
     ON_WM_ERASEBKGND()
+    ON_WM_LBUTTONUP()
     ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CMyListCtrl::OnNMCustomdraw)
 END_MESSAGE_MAP()
 
@@ -177,6 +178,12 @@ void CMyListCtrl::DrawSubItem(LPNMLVCUSTOMDRAW lpnmcd)
     dc.DrawText(strText, strText.GetLength(), &rSubItem, DT_SINGLELINE | pos | DT_VCENTER | DT_END_ELLIPSIS);
     dc.RestoreDC(nSave);
     dc.Detach();
+}
+
+void CMyListCtrl::OnLButtonUp(UINT nFlags, CPoint point)
+{
+    int iItem = HitTest(point, NULL);
+    CListCtrl::OnLButtonUp(nFlags, point);
 }
 
 void CMyListCtrl::InvalidateItemRect(int nItem)

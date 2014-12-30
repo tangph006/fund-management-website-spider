@@ -28,6 +28,7 @@ protected:
     virtual void DoDataExchange(CDataExchange* pDX);
     virtual BOOL OnInitDialog();
     virtual BOOL PreTranslateMessage(MSG* pMsg);
+    virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
     afx_msg void OnPaint();
     afx_msg void OnButtonStart();
     afx_msg void OnButtonStop();
@@ -38,13 +39,13 @@ protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
     afx_msg void OnLvnGetdispinfoListResult(NMHDR *pNMHDR, LRESULT *pResult);
-    virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
     DECLARE_MESSAGE_MAP()
 private:
     void InitListResultHeader();
     void AppendMsg(CString strMsg);
     void DisableAllBtns();
     void EnableUsernameCtrls(BOOL bEnable);
+    void MyOnRtnDepthMarketData(int nDataCount);
 private:
     int m_oldCx;
     int m_oldCy;
