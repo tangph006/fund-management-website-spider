@@ -386,7 +386,7 @@ void CCTPDemoDlg::AppendMsg(CString strMsg)
     m_listResult.GetScrollRange(SB_VERT, &minPos, &maxPos);
     m_listResult.SetItemCount(nCount);
     if((maxPos-minPos) > 0 &&
-        (maxPos-curPos)/(maxPos-minPos) < 0.05f)
+        (float)((maxPos-curPos)/(float)(maxPos-minPos)) < 0.05f)
     {
         m_listResult.EnsureVisible(nCount-1, TRUE);
     }
@@ -413,7 +413,7 @@ void CCTPDemoDlg::MyOnRtnDepthMarketData(int nDataCount)
     WaitForSingleObject(g_totalDataMutex, INFINITE);
     CThostFtdcDepthMarketDataField* pMarketData = g_totalData.GetDataByIndex(nDataCount-1);
     CString strMsg;
-    strMsg.Format(_T("WM_OnRtnDepthMarketData: %s,%.2f,%.2f"), 
+    strMsg.Format(_T("WM_OnRtnDepthMarketData: %s, %.2f, %.2f"), 
         pMarketData->ActionDay,
         pMarketData->AskPrice1,
         pMarketData->BidPrice1);
