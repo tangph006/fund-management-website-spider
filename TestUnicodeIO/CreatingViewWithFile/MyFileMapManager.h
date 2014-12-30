@@ -8,31 +8,32 @@
 template<class T> 
 class MyFileMapManager
 {
-public:
-    MyFileMapManager():m_nDataCount(0),m_pData(0),m_hFile(0),m_hMap(0), m_nIncrease(4096)
+private:
+    typedef struct 
     {
-        memset(m_strStructName, 0, 64);
+        int m_nDataCount;
+        char m_strStructName[64];
+    } tagDataInfo;
+
+public:
+    MyFileMapManager(): m_pData(0),m_hFile(0),m_hMap(0), m_nMappedDataCount(0)
+    {
+        m_dataInfo.m_nDataCount = 0;
+        memset(m_dataInfo.m_strStructName, 0, 64);
         memset(m_strPath, 0, 256);
         const type_info& typeinfo = typeid(T);
         const char* className = typeinfo.name();
-        strcpy(&m_strStructName[0], className);
+        strcpy(&m_dataInfo.m_strStructName[0], className);
     }
 
     virtual ~MyFileMapManager()
     {
-        if(m_pMapViewBegin)
-        {
-            UnmapViewOfFile(m_pMapViewBegin);
-            m_pMapViewBegin = NULL;
-        }
-        if(m_hMap)
-            CloseHandle(m_hMap);
-        if(m_hFile)
-            CloseHandle(m_hFile);
+        UnMapFromFile();
     }
 
     void MapToFile(int& iErr, TCHAR* pPath)
     {
+        UnMapFromFile();
         if(pPath == NULL)
         {
             iErr = ID_ERROR_NULL_POINTER;
@@ -45,11 +46,10 @@ public:
 
         strcpy((char*)m_strPath, (char*)pPath);
 
-        m_nDataCount = GetDataCountFromFile(iErr, pPath);
+        ReadDataInformation(iErr, pPath);
         if(iErr != ID_SUCCESS)
             return;
 
-        m_n2 = m_nDataCount + 1024;
         m_hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
             NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (m_hFile == INVALID_HANDLE_VALUE)
@@ -58,82 +58,96 @@ public:
             return;
         }
 
-        m_hMap = CreateFileMapping(m_hFile, NULL, PAGE_READWRITE, 0, 68+sizeof(T)*m_n2, NULL);
+        if(m_dataInfo.m_nDataCount >= m_nMappedDataCount)
+            m_nMappedDataCount = GetNextSize(m_dataInfo.m_nDataCount);
+        CreateAndMap(iErr);
+        return;
+    }
+
+    void UnMapFromFile() 
+    {
+        if(m_pMapViewBegin)
+        {
+            UnmapViewOfFile(m_pMapViewBegin);
+            m_pMapViewBegin = NULL;
+        }
+        if(m_hMap)
+        {
+            CloseHandle(m_hMap);
+            m_hMap = NULL;
+        }
+
+        if(m_hFile)
+        {
+            if(m_nMappedDataCount > m_dataInfo.m_nDataCount)
+            {
+                //SetEndOfFile(m_hFile);
+            }
+            CloseHandle(m_hFile);
+            m_hFile = NULL;
+        }
+    }
+
+    int AddItem(int& iErr, const T* pItem)
+    {
+        assert(pItem);
+        memcpy(&m_pData[m_dataInfo.m_nDataCount], pItem, sizeof(T));
+        m_dataInfo.m_nDataCount++;
+        memcpy(m_pMapViewBegin, &m_dataInfo.m_nDataCount, 4);
+        if(m_dataInfo.m_nDataCount >= m_nMappedDataCount)
+        {
+            UnmapViewOfFile(m_pMapViewBegin);
+            CloseHandle(m_hMap);
+            m_hMap = NULL;
+            m_nMappedDataCount = GetNextSize(m_nMappedDataCount);
+            CreateAndMap(iErr);
+            return m_dataInfo.m_nDataCount;
+        }
+        iErr = ID_SUCCESS;
+        return m_dataInfo.m_nDataCount;
+    }
+
+    int GetDataCount()
+    {
+        return m_dataInfo.m_nDataCount;
+    }
+
+    T* GetDataByIndex(int iIndex)
+    {
+        return m_pData+iIndex;
+    }
+
+protected:
+    void CreateAndMap(int &iErr)
+    {
+        int sizeOfT = sizeof(T);
+        int sizeToAlloc = sizeof(m_dataInfo)+sizeof(T)*m_nMappedDataCount;
+        m_hMap = CreateFileMapping(m_hFile, NULL, PAGE_READWRITE, 0, sizeToAlloc, NULL);
         if (m_hMap == NULL)
         {
             iErr = ID_ERROR_CREATE_FILE_MAPPING_FAILED;
             CloseHandle(m_hFile);
+            m_hFile = NULL;
             return;
         }
-
-        m_pMapViewBegin = MapViewOfFile(m_hMap, FILE_MAP_ALL_ACCESS, 0, 0, 68+sizeof(T)*m_n2);
+        int iWinErr = GetLastError();
+        m_pMapViewBegin = MapViewOfFile(m_hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
         if (m_pMapViewBegin == NULL)
         {
-            int iErr = ID_ERROR_MAP_VIEW_OF_FILE_FAILED;
+            iWinErr = GetLastError();
+            iErr = ID_ERROR_MAP_VIEW_OF_FILE_FAILED;
             CloseHandle(m_hMap);
+            m_hMap = NULL;
             CloseHandle(m_hFile);
+            m_hFile = NULL;
             return;
         }
 
-        int* pTemp = (int*)m_pMapViewBegin;
-        m_nDataCount = *pTemp;
-        pTemp++;
-        if(strcmp(m_strStructName, (TCHAR*)pTemp) != 0)
-        {
-            int iErr = ID_ERROR_NOT_CORRECT_DATATYPE;
-            return;
-        }
-        m_pData = ((T*)pTemp) + 16;
+        m_pData = (T*)((DWORD)m_pMapViewBegin+sizeof(m_dataInfo));
         iErr = ID_SUCCESS;
         return;
     }
 
-    void AddItem(int& iErr, const T* pItem)
-    {
-        assert(pItem);
-        {
-            int sizeOfT = sizeof(T);
-            memcpy(&m_pData[m_nDataCount], pItem, sizeOfT);
-        }
-        m_nDataCount++;
-        memcpy(m_pMapViewBegin, &m_nDataCount, 4);
-        if(m_nDataCount == m_n2-2)
-        {
-            UnmapViewOfFile(m_pMapViewBegin);
-            CloseHandle(m_hMap);
-
-            m_n2 += m_nIncrease;
-            m_hMap = CreateFileMapping(m_hFile, NULL, PAGE_READWRITE, 0, 68+sizeof(T)*m_n2, NULL);
-            if (m_hMap == NULL)
-            {
-                iErr = ID_ERROR_CREATE_FILE_MAPPING_FAILED;
-                CloseHandle(m_hFile);
-                return;
-            }
-
-            m_pMapViewBegin = MapViewOfFile(m_hMap, FILE_MAP_ALL_ACCESS, 0, 0, 68+sizeof(T)*m_n2);
-            if (m_pMapViewBegin == NULL)
-            {
-                int iErr = ID_ERROR_MAP_VIEW_OF_FILE_FAILED;
-                CloseHandle(m_hMap);
-                CloseHandle(m_hFile);
-                return;
-            }
-
-            int* pTemp = (int*)m_pMapViewBegin;
-            pTemp++;
-            if(strcmp(m_strStructName, (TCHAR*)pTemp) != 0)
-            {
-                int iErr = ID_ERROR_NOT_CORRECT_DATATYPE;
-                return;
-            }
-            m_pData = ((T*)pTemp) + 16;
-            iErr = ID_SUCCESS;
-            return;
-        }
-    }
-
-protected:
     void CreateFileIfNotExist(int &iErr, TCHAR* pPath)
     {
         HANDLE hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
@@ -151,8 +165,7 @@ protected:
                     return;
                 }
                 DWORD tempDWord;
-                WriteFile(hFile, &m_nDataCount, 4, &tempDWord, NULL);
-                WriteFile(hFile, m_strStructName, 64, &tempDWord, NULL);
+                WriteFile(hFile, &m_dataInfo, sizeof(m_dataInfo), &tempDWord, NULL);
                 CloseHandle(hFile);
                 iErr = ID_SUCCESS;
                 return;
@@ -167,64 +180,48 @@ protected:
         iErr = ID_SUCCESS;
     }
 
-    int GetDataCountFromFile(int &iErr, TCHAR* pPath)
+    void ReadDataInformation(int &iErr, TCHAR* pPath)
     {
         HANDLE hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
             NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile == INVALID_HANDLE_VALUE)
         {
             iErr = ID_ERROR_OPEN_FILE_FAILED;
-            return -1;
+            return;
         }
-
-        LARGE_INTEGER fileSize;
-        ::GetFileSizeEx(hFile, &fileSize);
-
-        HANDLE hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, 68, NULL);
-        if (hMap == NULL)
-        {
-            iErr = ID_ERROR_CREATE_FILE_MAPPING_FAILED;
-            CloseHandle(hFile);
-            return -1;
-        }
-
-        LPVOID pMapViewBegin = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, 68);
-        if (pMapViewBegin == NULL)
-        {
-            int iErr = ID_ERROR_MAP_VIEW_OF_FILE_FAILED;
-            CloseHandle(hMap);
-            CloseHandle(hFile);
-            return -1;
-        }
-
-        int* pTemp = (int*)pMapViewBegin;
-        int nDataCount = *pTemp;
-        pTemp++;
-        if(strcmp(m_strStructName, (char*)pTemp) != 0)
-        {
-            int iErr = ID_ERROR_NOT_CORRECT_DATATYPE;
-            return -1;
-        }
-
-        UnmapViewOfFile(pMapViewBegin);
-        CloseHandle(hMap);
+        DWORD tempDWord;
+        ReadFile(hFile, &m_dataInfo, sizeof(m_dataInfo), &tempDWord, NULL);
         CloseHandle(hFile);
         iErr = ID_SUCCESS;
-        return nDataCount;
+        return;
     }
 
-    int GetIncrease() { return m_nIncrease; }
-    void SetIncrease(int nIncrease) { m_nIncrease = nIncrease; }
+    static int GetNextSize(int nCurSize)
+    {
+        static const int primeList[72] = {
+        3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
+        1103, 1327, 1597, 1931, 2333, 2801, 3371, 4049, 4861, 5839, 7013, 8419, 10103, 12143, 14591,
+        17519, 21023, 25229, 30293, 36353, 43627, 52361, 62851, 75431, 90523, 108631, 130363, 156437,
+        187751, 225307, 270371, 324449, 389357, 467237, 560689, 672827, 807403, 968897, 1162687, 1395263,
+        1674319, 2009191, 2411033, 2893249, 3471899, 4166287, 4999559, 5999471, 7199369};
+        int nCount = sizeof(primeList) / sizeof(primeList[0]);
+        for(int i=0; i<nCount; i++)
+        {
+            if(primeList[i] > nCurSize)
+            {
+                return primeList[i];
+            }
+        }
+        return -1;
+    }
 protected:
+    tagDataInfo m_dataInfo;
     LPVOID m_pMapViewBegin;
-    int m_nDataCount;
+    int m_nMappedDataCount;
     T* m_pData;
-    int m_nIncrease;
-    char m_strStructName[64];
     TCHAR m_strPath[256];
     HANDLE m_hFile;
     HANDLE m_hMap;
-    int m_n2;
 };
 
 

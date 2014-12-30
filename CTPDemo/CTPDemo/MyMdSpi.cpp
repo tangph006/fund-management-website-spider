@@ -138,7 +138,12 @@ void CMyMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
     if(iErr != ID_SUCCESS)
         return;
     ReleaseMutex(g_totalDataMutex);
-    PostSimpleMsgToObservers(WM_OnRtnDepthMarketData, (WPARAM)nDataCount, NULL);
+
+    for(int i=0; i<20; i++)
+    {
+        Sleep(500);
+        PostSimpleMsgToObservers(WM_OnRtnDepthMarketData, (WPARAM)nDataCount, NULL);
+    }
 }
 
 void CMyMdSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)

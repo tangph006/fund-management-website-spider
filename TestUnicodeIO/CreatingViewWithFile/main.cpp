@@ -1,5 +1,6 @@
 //http://bbs.csdn.net/topics/80299016
 #include "MyFileMapManager.h"
+#include "ThostFtdcUserApiStruct.h"
 #include <stdio.h>
 class TempDataClass
 {
@@ -23,9 +24,42 @@ public:
 
 int main()
 {
-    MyFileMapManager<TempDataClass2> manager;
+    TCHAR* strPath = _T("1.dat");
+    HANDLE hFile = CreateFile(strPath, GENERIC_READ | GENERIC_WRITE, 0, 
+        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    DWORD sizeToAlloc = 1363534860;
+    HANDLE hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, sizeToAlloc, NULL);
+    if (hMap == NULL)
+    {
+        CloseHandle(hFile);
+        hFile = NULL;
+        return 0;
+    }
+    int iWinErr = GetLastError();
+    LPVOID pMapViewBegin = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    if (pMapViewBegin == NULL)
+    {
+        iWinErr = GetLastError();
+        CloseHandle(hMap);
+        hMap = NULL;
+        CloseHandle(hFile);
+        hFile = NULL;
+        return 0;
+    }
 
-    TCHAR* strPath = _T("1.txt");
+    UnmapViewOfFile(pMapViewBegin);
+    CloseHandle(hMap);
+    hMap = NULL;
+    CloseHandle(hFile);
+    hFile = NULL;
+    return 0;
+}
+
+int main12121()
+{
+    MyFileMapManager<CThostFtdcDepthMarketDataField> manager;
+
+    TCHAR* strPath = _T("1.dat");
     DeleteFile(strPath);
 
     int iErr=0;
@@ -37,10 +71,15 @@ int main()
     QueryPerformanceCounter(&time_start);
     for(int i=0; i<10000000; i++)
     {
-        TempDataClass2 a;
-        a.m_int1 = i;
-        a.m_int2 = 2;
+        CThostFtdcDepthMarketDataField a;
+        memset(&a, 0, sizeof(a));
         manager.AddItem(iErr, &a);
+        if(iErr != ID_SUCCESS)
+        {
+            printf(_T("error occured: %d"), iErr);
+            getchar();
+            break;
+        }
     }
     LARGE_INTEGER time_end;
     QueryPerformanceCounter(&time_end);
