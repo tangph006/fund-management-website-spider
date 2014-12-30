@@ -6,13 +6,11 @@
 #include "MyMdSpi.h"
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-std::map<std::string, MyFileMapManager<CThostFtdcDepthMarketDataField>> g_mapData;
 MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
 HANDLE g_totalDataMutex = CreateMutex(NULL, FALSE, _T("g_totalData_Mutex"));
 
 void AddInstrumentIDType(std::string intrusmentID)
 {
-    g_mapData[intrusmentID].GetDataCount();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,13 +96,28 @@ void CMyMdSpi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool
 void CMyMdSpi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     PostSimpleMsgToObservers(WM_OnRspSubMarketData, NULL, NULL);
-    if(bIsLast && pRspInfo->ErrorID==0){}
+    if(bIsLast && pRspInfo->ErrorID==0)
+    {
+        SYSTEMTIME sysTime;
+        GetLocalTime(&sysTime);
+        char strFile[64] = {0};
+        sprintf(strFile, _T("0total-%4d-%2d-%2d.txt"), sysTime.wYear, sysTime.wMonth, sysTime.wDay);
+        int iErr = ID_SUCCESS;
+        WaitForSingleObject(g_totalDataMutex, INFINITE);
+        g_totalData.MapToFile(iErr, strFile);
+        ReleaseMutex(g_totalDataMutex);
+    }
 }
 
 void CMyMdSpi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     PostSimpleMsgToObservers(WM_OnRspUnSubMarketData, NULL, NULL);
-    if(bIsLast && pRspInfo->ErrorID==0){}
+    if(bIsLast && pRspInfo->ErrorID==0)
+    {
+        WaitForSingleObject(g_totalDataMutex, INFINITE);
+        g_totalData.UnMapFromFile();
+        ReleaseMutex(g_totalDataMutex);
+    }
 }
 
 void CMyMdSpi::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -122,7 +135,6 @@ void CMyMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
     int iErr = ID_SUCCESS;
     WaitForSingleObject(g_totalDataMutex, INFINITE);
     int nDataCount = g_totalData.AddItem(iErr, pDepthMarketData);
-    g_mapData[std::string(pDepthMarketData->InstrumentID)].AddItem(iErr, pDepthMarketData);
     if(iErr != ID_SUCCESS)
         return;
     ReleaseMutex(g_totalDataMutex);
@@ -155,23 +167,9 @@ void CMyMdSpi::Logout(int& iErr)
 
 void CMyMdSpi::StartSubscribe(int& iErr)
 {
-    SYSTEMTIME sysTime;
-    GetLocalTime(&sysTime);
-    char strFile[64] = {0};
-    std::vector<std::string>::iterator itor = m_vIntrusmentID.begin();
-    for(; itor!=m_vIntrusmentID.end(); ++itor)
-    {
-        sprintf(strFile, _T("%s-%4d-%2d-%2d.txt"), itor->c_str(), sysTime.wYear, sysTime.wMonth, sysTime.wDay);
-        g_mapData[*itor].MapToFile(iErr, strFile);
-        if(iErr != ID_SUCCESS)
-            return;
-    }
-    sprintf(strFile, _T("0total-%4d-%2d-%2d.txt"), sysTime.wYear, sysTime.wMonth, sysTime.wDay);
-    g_totalData.MapToFile(iErr, strFile);
-
     int nCount = m_vIntrusmentID.size();
     char** ppInstrumentID = new char*[nCount];
-    itor = m_vIntrusmentID.begin();
+    std::vector<std::string>::iterator itor = m_vIntrusmentID.begin();
     for(int i=0; i<nCount; i++)
     {
         assert(itor != m_vIntrusmentID.end());
@@ -193,17 +191,11 @@ void CMyMdSpi::StopSubscribe(int& iErr)
     {
         assert(itor != m_vIntrusmentID.end());
         ppInstrumentID[i] = new TThostFtdcInstrumentIDType;
+        memset(ppInstrumentID[i], 0, sizeof(TThostFtdcInstrumentIDType));
         strncpy(ppInstrumentID[i], itor->c_str(), itor->length());
         ++itor;
     }
     m_pMdApi->UnSubscribeMarketData(ppInstrumentID, nCount);
-
-    g_totalData.UnMapFromFile();
-    itor = m_vIntrusmentID.begin();
-    for(; itor!=m_vIntrusmentID.end(); ++itor)
-    {
-        g_mapData[*itor].UnMapFromFile();
-    }
 }
 
 void CMyMdSpi::AddIntrusmentType(int& iErr, std::string strIntrusmentID)
