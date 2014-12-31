@@ -110,6 +110,7 @@
     <ClInclude Include="CTPDemo.h" />
     <ClInclude Include="CTPDemoDlg.h" />
     <ClInclude Include="DataStorage.h" />
+    <ClInclude Include="ErrorCode.h" />
     <ClInclude Include="FloatEdit.h" />
     <ClInclude Include="MyFileMapManager.h" />
     <ClInclude Include="MyListCtrl.h" />

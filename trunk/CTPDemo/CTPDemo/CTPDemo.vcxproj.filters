@@ -54,6 +54,9 @@
     <ClInclude Include="MyLogger.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="ErrorCode.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CTPDemo.rc" />

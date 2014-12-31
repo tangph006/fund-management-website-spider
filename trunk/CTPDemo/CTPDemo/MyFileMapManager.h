@@ -4,9 +4,10 @@
 #include <typeinfo>
 #include <windows.h>
 #include "resource.h"
+#include "ErrorCode.h"
 
 template<class T> 
-class MyFileMapManager
+class MyFileMapper
 {
 private:
     typedef struct 
@@ -16,7 +17,7 @@ private:
     } tagDataInfo;
 
 public:
-    MyFileMapManager(): m_pData(0),m_hFile(0),m_hMap(0), m_nMappedDataCount(0)
+    MyFileMapper(): m_pData(0),m_hFile(0),m_hMap(0), m_nMappedDataCount(0)
     {
         m_dataInfo.m_nDataCount = 0;
         memset(m_dataInfo.m_strStructName, 0, 64);
@@ -26,35 +27,35 @@ public:
         strcpy(&m_dataInfo.m_strStructName[0], className);
     }
 
-    virtual ~MyFileMapManager()
+    virtual ~MyFileMapper()
     {
         UnMapFromFile();
     }
 
-    void MapToFile(int& iErr, TCHAR* pPath)
+    void MapToFile(int& iErr, const std::string& filePath)
     {
         UnMapFromFile();
-        if(pPath == NULL)
+        if(filePath.empty())
         {
-            iErr = ID_ERROR_NULL_POINTER;
+            iErr = ErrorInvalidFilePath;
             return;
         }
 
-        CreateFileIfNotExist(iErr, pPath);
-        if(iErr != ID_SUCCESS)
+        CreateFileIfNotExist(iErr, filePath);
+        if(iErr != Success0)
             return;
 
-        strcpy((char*)m_strPath, (char*)pPath);
+        strcpy(m_strPath, filePath.c_str());
 
-        ReadDataInformation(iErr, pPath);
-        if(iErr != ID_SUCCESS)
+        ReadDataInformation(iErr, filePath);
+        if(iErr != Success0)
             return;
 
-        m_hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
+        m_hFile = CreateFile(filePath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 
             NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (m_hFile == INVALID_HANDLE_VALUE)
         {
-            iErr = ID_ERROR_OPEN_FILE_FAILED;
+            iErr = ErrorOpenFileFailed;
             return;
         }
 
@@ -103,7 +104,7 @@ public:
             CreateAndMap(iErr);
             return m_dataInfo.m_nDataCount;
         }
-        iErr = ID_SUCCESS;
+        iErr = Success0;
         return m_dataInfo.m_nDataCount;
     }
 
@@ -124,7 +125,7 @@ protected:
         m_hMap = CreateFileMapping(m_hFile, NULL, PAGE_READWRITE, 0, sizeof(m_dataInfo)+sizeof(T)*m_nMappedDataCount, NULL);
         if (m_hMap == NULL)
         {
-            iErr = ID_ERROR_CREATE_FILE_MAPPING_FAILED;
+            iErr = ErrorCreateFileMapFailed;
             CloseHandle(m_hFile);
             m_hFile = NULL;
             return;
@@ -133,7 +134,7 @@ protected:
         m_pMapViewBegin = MapViewOfFile(m_hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(m_dataInfo)+sizeof(T)*m_nMappedDataCount);
         if (m_pMapViewBegin == NULL)
         {
-            int iErr = ID_ERROR_MAP_VIEW_OF_FILE_FAILED;
+            int iErr = ErrorMapViewOfFileFailed;
             CloseHandle(m_hMap);
             m_hMap = NULL;
             CloseHandle(m_hFile);
@@ -142,55 +143,55 @@ protected:
         }
 
         m_pData = (T*)((DWORD)m_pMapViewBegin+sizeof(m_dataInfo));
-        iErr = ID_SUCCESS;
+        iErr = Success0;
         return;
     }
 
-    void CreateFileIfNotExist(int &iErr, TCHAR* pPath)
+    void CreateFileIfNotExist(int &iErr, std::string filePath)
     {
-        HANDLE hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
+        HANDLE hFile = CreateFile(filePath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 
             NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile == INVALID_HANDLE_VALUE)
         {
             int iWin32Err = GetLastError();
             if(iWin32Err == 2)
             {
-                hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
+                hFile = CreateFile(filePath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 
                     NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
                 if (hFile == INVALID_HANDLE_VALUE)
                 {
-                    iErr = ID_ERROR_OPEN_FILE_FAILED;
+                    iErr = ErrorOpenFileFailed;
                     return;
                 }
                 DWORD tempDWord;
                 WriteFile(hFile, &m_dataInfo, sizeof(m_dataInfo), &tempDWord, NULL);
                 CloseHandle(hFile);
-                iErr = ID_SUCCESS;
+                iErr = Success0;
                 return;
             }
             else
             {
-                iErr = ID_ERROR_OPEN_FILE_FAILED;
+                iErr = ErrorOpenFileFailed;
                 return;
             }
         }
         CloseHandle(hFile);
-        iErr = ID_SUCCESS;
+        iErr = Success0;
     }
 
-    void ReadDataInformation(int &iErr, TCHAR* pPath)
+    void ReadDataInformation(int &iErr, const std::string& filePath)
     {
-        HANDLE hFile = CreateFile(pPath, GENERIC_READ | GENERIC_WRITE, 0, 
+        HANDLE hFile = CreateFile(filePath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 
             NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile == INVALID_HANDLE_VALUE)
         {
-            iErr = ID_ERROR_OPEN_FILE_FAILED;
+            iErr = ErrorOpenFileFailed;
             return;
         }
         DWORD tempDWord;
         ReadFile(hFile, &m_dataInfo, sizeof(m_dataInfo), &tempDWord, NULL);
         CloseHandle(hFile);
-        iErr = ID_SUCCESS;
+        iErr = Success0;
         return;
     }
 

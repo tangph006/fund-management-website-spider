@@ -16,6 +16,8 @@ CCTPDemoApp::CCTPDemoApp()
 }
 
 CCTPDemoApp theApp;
+MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
+HANDLE g_totalDataMutex = CreateMutex(NULL, FALSE, _T("g_totalData_Mutex"));
 
 BOOL CCTPDemoApp::InitInstance()
 {
