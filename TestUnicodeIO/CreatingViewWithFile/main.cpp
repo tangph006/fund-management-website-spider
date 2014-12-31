@@ -27,7 +27,7 @@ int main()
     TCHAR* strPath = _T("1.dat");
     HANDLE hFile = CreateFile(strPath, GENERIC_READ | GENERIC_WRITE, 0, 
         NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    DWORD sizeToAlloc = 1363534860;
+    DWORD sizeToAlloc = 1024*1024*64*8;
     HANDLE hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, sizeToAlloc, NULL);
     if (hMap == NULL)
     {
@@ -36,8 +36,15 @@ int main()
         return 0;
     }
     int iWinErr = GetLastError();
-    LPVOID pMapViewBegin = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
-    if (pMapViewBegin == NULL)
+    LPVOID pMapViewBegin1 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    LPVOID pMapViewBegin2 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    LPVOID pMapViewBegin3 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    LPVOID pMapViewBegin4 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    LPVOID pMapViewBegin5 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    LPVOID pMapViewBegin6 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    LPVOID pMapViewBegin7 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    LPVOID pMapViewBegin8 = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeToAlloc);
+    if (pMapViewBegin1 == NULL)
     {
         iWinErr = GetLastError();
         CloseHandle(hMap);
@@ -47,7 +54,7 @@ int main()
         return 0;
     }
 
-    UnmapViewOfFile(pMapViewBegin);
+    UnmapViewOfFile(pMapViewBegin1);
     CloseHandle(hMap);
     hMap = NULL;
     CloseHandle(hFile);

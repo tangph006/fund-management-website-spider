@@ -4,17 +4,6 @@
 #include <string>
 #include <windows.h>
 #include "MyMdSpi.h"
-/////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////
-MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
-HANDLE g_totalDataMutex = CreateMutex(NULL, FALSE, _T("g_totalData_Mutex"));
-
-void AddInstrumentIDType(std::string intrusmentID)
-{
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 CMyMdSpi::CMyMdSpi()
 {
@@ -103,9 +92,7 @@ void CMyMdSpi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificIn
         char strFile[64] = {0};
         sprintf(strFile, _T("0total-%4d-%2d-%2d.txt"), sysTime.wYear, sysTime.wMonth, sysTime.wDay);
         int iErr = ID_SUCCESS;
-        WaitForSingleObject(g_totalDataMutex, INFINITE);
-        g_totalData.MapToFile(iErr, strFile);
-        ReleaseMutex(g_totalDataMutex);
+        m_pTotalData->MapToFile(iErr, strFile);
     }
 }
 
@@ -114,9 +101,7 @@ void CMyMdSpi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecific
     PostSimpleMsgToObservers(WM_OnRspUnSubMarketData, NULL, NULL);
     if(bIsLast && pRspInfo->ErrorID==0)
     {
-        WaitForSingleObject(g_totalDataMutex, INFINITE);
-        g_totalData.UnMapFromFile();
-        ReleaseMutex(g_totalDataMutex);
+        m_pTotalData->UnMapFromFile();
     }
 }
 
@@ -133,11 +118,9 @@ void CMyMdSpi::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecifi
 void CMyMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
     int iErr = ID_SUCCESS;
-    WaitForSingleObject(g_totalDataMutex, INFINITE);
-    int nDataCount = g_totalData.AddItem(iErr, pDepthMarketData);
+    int nDataCount = m_pTotalData->AddItem(iErr, pDepthMarketData);
     if(iErr != ID_SUCCESS)
         return;
-    ReleaseMutex(g_totalDataMutex);
 
     for(int i=0; i<20; i++)
     {

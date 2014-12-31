@@ -1,9 +1,9 @@
 #pragma once
-#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h"
-#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiDataType.h"
-#include "MyFileMapManager.h"
 #include <map>
 #include <vector>
+#include "MyFileMapManager.h"
+#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h"
+#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiDataType.h"
 
 static const int MaxPathLen = 256;
 static const int WM_MY_BASE = WM_USER + 1;
@@ -63,5 +63,6 @@ protected:
     TThostFtdcPasswordType m_password;
     char m_addr1[MaxPathLen];
     char m_addr2[MaxPathLen];
-    std::vector<std::string> m_vIntrusmentID; 
+    std::vector<std::string> m_vIntrusmentID;
+    MyFileMapManager<CThostFtdcDepthMarketDataField>* m_pTotalData;
 };

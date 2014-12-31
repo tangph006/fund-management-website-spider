@@ -407,7 +407,7 @@ void CCTPDemoDlg::OnLvnGetdispinfoListResult(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CCTPDemoDlg::MyOnRtnDepthMarketData(int nDataCount)
 {
-    extern MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
+    extern MyFileMapper<CThostFtdcDepthMarketDataField> g_totalData;
     extern HANDLE g_totalDataMutex;
     int iErr = ID_SUCCESS;
     WaitForSingleObject(g_totalDataMutex, INFINITE);
