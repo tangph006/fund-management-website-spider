@@ -7,7 +7,7 @@ struct LogItem32
 {
     LogItem32(){ Clear(); }
     LogItem32(char* strLog){ assert(strlen(strLog) < 32); Clear(); strncpy(logline, strLog, 31); }
-    SetLogLine(char* strLog){ assert(strlen(strLog) < 32); Clear(); strncpy(logline, strLog, 31); }
+    void SetLogLine(char* strLog){ assert(strlen(strLog) < 32); Clear(); strncpy(logline, strLog, 31); }
     void Clear(){ memset(logline, 0, 32); }
     char logline[32];
 };
@@ -15,7 +15,7 @@ struct LogItem64
 {
     LogItem64(){ Clear(); }
     LogItem64(char* strLog){ assert(strlen(strLog) < 64); Clear(); strncpy(logline, strLog, 63); }
-    SetLogLine(char* strLog){ assert(strlen(strLog) < 64); Clear(); strncpy(logline, strLog, 63); }
+    void SetLogLine(char* strLog){ assert(strlen(strLog) < 64); Clear(); strncpy(logline, strLog, 63); }
     void Clear(){ memset(logline, 0, 64); }
     char logline[64];
 };
@@ -23,7 +23,7 @@ struct LogItem128
 {
     LogItem128(){ Clear(); }
     LogItem128(char* strLog){ assert(strlen(strLog) < 128); Clear(); strncpy(logline, strLog, 127); }
-    SetLogLine(char* strLog){ assert(strlen(strLog) < 128); Clear(); strncpy(logline, strLog, 127); }
+    void SetLogLine(char* strLog){ assert(strlen(strLog) < 128); Clear(); strncpy(logline, strLog, 127); }
     void Clear(){ memset(logline, 0, 128); }
     char logline[128];
 };
@@ -31,7 +31,7 @@ struct LogItem256
 {
     LogItem256(){ Clear(); }
     LogItem256(char* strLog){ assert(strlen(strLog) < 256); Clear(); strncpy(logline, strLog, 255); }
-    SetLogLine(char* strLog){ assert(strlen(strLog) < 256); Clear(); strncpy(logline, strLog, 255); }
+    void SetLogLine(char* strLog){ assert(strlen(strLog) < 256); Clear(); strncpy(logline, strLog, 255); }
     void Clear(){ memset(logline, 0, 256); }
     char logline[256];
 };
@@ -39,7 +39,7 @@ struct LogItem512
 {
     LogItem512(){ Clear(); }
     LogItem512(char* strLog){ assert(strlen(strLog) < 512); Clear(); strncpy(logline, strLog, 511); }
-    SetLogLine(char* strLog){ assert(strlen(strLog) < 512); Clear(); strncpy(logline, strLog, 511); }
+    void SetLogLine(char* strLog){ assert(strlen(strLog) < 512); Clear(); strncpy(logline, strLog, 511); }
     void Clear(){ memset(logline, 0, 512); }
     char logline[512];
 };

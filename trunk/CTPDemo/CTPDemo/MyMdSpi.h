@@ -2,8 +2,9 @@
 #include <map>
 #include <vector>
 #include "MyFileMapManager.h"
-#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h"
-#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiDataType.h"
+#include "ThostFtdcMdApi.h"
+#include "TotalDataManager.h"
+#include "DataStorage.h"
 
 static const int MaxPathLen = 256;
 static const int WM_MY_BASE = WM_USER + 1;
@@ -23,8 +24,8 @@ static const int WM_OnRtnForQuoteRsp = WM_MY_BASE + 12;
 class CMyMdSpi : public CThostFtdcMdSpi
 {
 public:
-    CMyMdSpi();
-    ~CMyMdSpi();
+    CMyMdSpi(TotalDepthMarketDataManager* pDataManager, DataStorage* pDataStorage);
+    virtual ~CMyMdSpi();
 public:
     virtual void OnFrontConnected();
     virtual void OnFrontDisconnected(int nReason);
@@ -50,6 +51,10 @@ public:
     void StartSubscribe(int& iErr);
     void StopSubscribe(int& iErr);
     void AddIntrusmentType(int& iErr, std::string strIntrusmentID);
+    TotalDepthMarketDataManager* GetDataManager(){ return m_pDataManager; }
+    void SetDataManager(TotalDepthMarketDataManager* pManager) { m_pDataManager = pManager; }
+    DataStorage* GetDataSotrage(){ return m_pDataSotrage; }
+    void SetDataSotrage(DataStorage* pDataStorage) { m_pDataSotrage = pDataStorage; }
 private:
     void ClearMyParts();
     void PostSimpleMsgToObservers(UINT Msg, WPARAM wParam, LPARAM lParam);
@@ -64,5 +69,6 @@ protected:
     char m_addr1[MaxPathLen];
     char m_addr2[MaxPathLen];
     std::vector<std::string> m_vIntrusmentID;
-    MyFileMapManager<CThostFtdcDepthMarketDataField>* m_pTotalData;
+    TotalDepthMarketDataManager* m_pDataManager;
+    DataStorage* m_pDataSotrage;
 };

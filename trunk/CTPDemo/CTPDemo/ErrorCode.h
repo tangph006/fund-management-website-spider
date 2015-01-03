@@ -5,6 +5,7 @@ enum CTPDemoErrorCode
     Success0,
     WarnBegin,
     WarnSameLoggerExists,
+    WarnInstrumentTypeExists,
     WarnEnd,
     ErrorBegin,
     ErrorInvalidFilePath,

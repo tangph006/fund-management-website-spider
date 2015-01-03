@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
-#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcUserApiStruct.h"
+#include "ThostFtdcUserApiStruct.h"
+#include "TotalDataManager.h"
 
 class DataStorage
 {
@@ -8,6 +9,7 @@ public:
     DataStorage();
     ~DataStorage();
 public:
+    void InitFromTotalData(TotalDepthMarketDataManager* pDataManager);
     void AddDepthMarketData(const CThostFtdcDepthMarketDataField* pDepthMarketData);
 
 protected:

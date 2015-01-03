@@ -4,8 +4,17 @@
 #include <string>
 #include <windows.h>
 #include "MyMdSpi.h"
+#include "ErrorCode.h"
+#include "log4cplus/logger.h"
+#include "log4cplus/fileappender.h"
+#include "log4cplus/loggingmacros.h"
+using namespace log4cplus;
 
-CMyMdSpi::CMyMdSpi()
+extern HANDLE g_totalDataMutex;
+
+CMyMdSpi::CMyMdSpi(TotalDepthMarketDataManager* pDataManager, DataStorage* pDataStorage) : 
+m_pDataManager(pDataManager),
+m_pDataSotrage(pDataStorage)
 {
     ClearMyParts();
 }
@@ -44,8 +53,13 @@ void CMyMdSpi::OnFrontConnected()
     strcpy(req.Password, m_password);
     m_pMdApi->ReqUserLogin(&req, m_nRequestID);
     m_nRequestID++;
-
     PostSimpleMsgToObservers(WM_OnFrontConnected, NULL, NULL);
+
+    SharedAppenderPtr _append(new FileAppender("MyMdSpiLog.log"));
+    _append->setName("MyMdSpiLogger");
+    Logger _logger = Logger::getInstance("MyMdSpi");
+    _logger.addAppender(_append);
+    LOG4CPLUS_DEBUG(_logger, "OnFrontConnected()");
 }
 
 void CMyMdSpi::OnFrontDisconnected(int nReason)
@@ -91,8 +105,7 @@ void CMyMdSpi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificIn
         GetLocalTime(&sysTime);
         char strFile[64] = {0};
         sprintf(strFile, _T("0total-%4d-%2d-%2d.txt"), sysTime.wYear, sysTime.wMonth, sysTime.wDay);
-        int iErr = ID_SUCCESS;
-        m_pTotalData->MapToFile(iErr, strFile);
+        int iErr = Success0;
     }
 }
 
@@ -101,7 +114,6 @@ void CMyMdSpi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecific
     PostSimpleMsgToObservers(WM_OnRspUnSubMarketData, NULL, NULL);
     if(bIsLast && pRspInfo->ErrorID==0)
     {
-        m_pTotalData->UnMapFromFile();
     }
 }
 
@@ -117,16 +129,11 @@ void CMyMdSpi::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecifi
 
 void CMyMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
-    int iErr = ID_SUCCESS;
-    int nDataCount = m_pTotalData->AddItem(iErr, pDepthMarketData);
-    if(iErr != ID_SUCCESS)
+    int iErr = Success0;
+    m_pDataManager->AddItem(iErr, pDepthMarketData);
+    if(iErr != Success0)
         return;
 
-    for(int i=0; i<20; i++)
-    {
-        Sleep(500);
-        PostSimpleMsgToObservers(WM_OnRtnDepthMarketData, (WPARAM)nDataCount, NULL);
-    }
 }
 
 void CMyMdSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
@@ -141,6 +148,7 @@ void CMyMdSpi::Login(int& iErr)
     m_pMdApi->RegisterFront(m_addr1);
     m_pMdApi->RegisterFront(m_addr2);
     m_pMdApi->Init();
+    iErr = Success0;
 }
 
 void CMyMdSpi::Logout(int& iErr)
@@ -151,6 +159,7 @@ void CMyMdSpi::Logout(int& iErr)
     strcpy(logout.UserID, m_investorID);
     m_pMdApi->ReqUserLogout(&logout, m_nRequestID);
     m_nRequestID++;
+    iErr = Success0;
 }
 
 void CMyMdSpi::StartSubscribe(int& iErr)
@@ -168,6 +177,7 @@ void CMyMdSpi::StartSubscribe(int& iErr)
     }
     m_pMdApi->UnSubscribeMarketData(ppInstrumentID, nCount);
     m_pMdApi->SubscribeMarketData(ppInstrumentID, nCount);
+    iErr = Success0;
 }
 
 void CMyMdSpi::StopSubscribe(int& iErr)
@@ -184,6 +194,7 @@ void CMyMdSpi::StopSubscribe(int& iErr)
         ++itor;
     }
     m_pMdApi->UnSubscribeMarketData(ppInstrumentID, nCount);
+    iErr = Success0;
 }
 
 void CMyMdSpi::AddIntrusmentType(int& iErr, std::string strIntrusmentID)
@@ -193,11 +204,11 @@ void CMyMdSpi::AddIntrusmentType(int& iErr, std::string strIntrusmentID)
     {
         if(m_vIntrusmentID[i] == strIntrusmentID)
         {
-            iErr = ID_WARN_INSTRUMENT_TYPE_ALREADY_EXISTS;
+            iErr = WarnInstrumentTypeExists;
             return;
         }
     }
     m_vIntrusmentID.push_back(strIntrusmentID);
-    iErr = ID_SUCCESS;
+    iErr = Success0;
     return;
 }
