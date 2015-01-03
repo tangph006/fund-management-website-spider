@@ -2,14 +2,20 @@
 #include "CTPDemo.h"
 #include "CTPDemoDlg.h"
 #include "afxdialogex.h"
+#include "ErrorCode.h"
+#include "log4cplus/logger.h"
+#include "log4cplus/fileappender.h"
+#include "log4cplus/loggingmacros.h"
+using namespace log4cplus;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-CCTPDemoDlg::CCTPDemoDlg(CWnd* pParent)
-    : CDialogEx(CCTPDemoDlg::IDD, pParent)
-    , CThostFtdcMdSpi()
+CCTPDemoDlg::CCTPDemoDlg(CMyMdSpi* pMdSpi, DataStorage* pDataStorage, CWnd* pParent)
+    : CDialogEx(CCTPDemoDlg::IDD, pParent),
+    m_pMdSpi(pMdSpi),
+    m_pDataStorage(pDataStorage)
 {
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
     m_vecMsg.clear();
@@ -65,7 +71,7 @@ BOOL CCTPDemoDlg::OnInitDialog()
     SetIcon(m_hIcon, TRUE);
     SetIcon(m_hIcon, FALSE);
 
-    m_mdSpi.m_observers.push_back(this->GetSafeHwnd());
+    m_pMdSpi->m_observers.push_back(this->GetSafeHwnd());
 
     m_listResult.SetParent(this);
     DWORD dwStyle = m_listResult.GetExtendedStyle();
@@ -92,7 +98,7 @@ BOOL CCTPDemoDlg::OnInitDialog()
     DisableAllBtns();
     GetDlgItem(IDC_BTN_LOGIN)->EnableWindow(TRUE);
 
-    MoveWindow(0, 0, 660, 200);
+    //MoveWindow(0, 0, 660, 200);
 
     return TRUE;
 }
@@ -221,8 +227,8 @@ void CCTPDemoDlg::OnButtonStart()
     DisableAllBtns();
     GetDlgItem(IDC_BTN_STOP)->EnableWindow(TRUE);
     GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
-    int iErr = ID_SUCCESS;
-    m_mdSpi.StartSubscribe(iErr);
+    int iErr = Success0;
+    m_pMdSpi->StartSubscribe(iErr);
 }
 
 void CCTPDemoDlg::OnButtonStop()
@@ -230,27 +236,33 @@ void CCTPDemoDlg::OnButtonStop()
     DisableAllBtns();
     GetDlgItem(IDC_BTN_GO)->EnableWindow(TRUE);
     GetDlgItem(IDC_BTN_LOGOUT)->EnableWindow(TRUE);
-    int iErr = ID_SUCCESS;
-    m_mdSpi.StopSubscribe(iErr);
+    int iErr = Success0;
+    m_pMdSpi->StopSubscribe(iErr);
 }
 
 
 void CCTPDemoDlg::OnButtonLogin()
 {
-    //m_mdSpi.ClearMyParts();
     CString strItem;
     GetDlgItemText(IDC_EDIT_BROKERID, strItem);
-    m_mdSpi.SetBrokerID(strItem.GetBuffer());
+    m_pMdSpi->SetBrokerID(strItem.GetBuffer());
     GetDlgItemText(IDC_EDIT_USERID, strItem);
-    m_mdSpi.SetInvestorID(strItem.GetBuffer());
+    m_pMdSpi->SetInvestorID(strItem.GetBuffer());
     GetDlgItemText(IDC_EDIT_PASSWORD, strItem);
-    m_mdSpi.SetPassword(strItem.GetBuffer());
+    m_pMdSpi->SetPassword(strItem.GetBuffer());
     TThostFtdcInstrumentIDType iID;
     GetDlgItemText(IDC_EDIT_CODE, iID, sizeof(iID)-1);
-    int iErr = ID_SUCCESS;
-    m_mdSpi.AddIntrusmentType(iErr, std::string(iID));
-    if(iErr != ID_SUCCESS)
+    int iErr = Success0;
+    m_pMdSpi->AddIntrusmentType(iErr, std::string(iID));
+    if(iErr >= ErrorBegin)
+    {
+        SharedAppenderPtr _append(new FileAppender("CTPDemoDlgLog.log"));
+        _append->setName("CTPDemoDlgLogger");
+        Logger _logger = Logger::getInstance("CTPDemoDlg");
+        _logger.addAppender(_append);
+        LOG4CPLUS_DEBUG(_logger, "Error Code:" << iErr);
         return;
+    }
 
     CString strIP, strPort;
     BYTE b1,b2,b3,b4;
@@ -259,12 +271,12 @@ void CCTPDemoDlg::OnButtonLogin()
     m_editPort.GetWindowText(strPort);
     CString strAddr1;
     strAddr1.Format(_T("tcp://%s:%s"), strIP, strPort);
-    m_mdSpi.SetAddr1(strAddr1.GetBuffer());
+    m_pMdSpi->SetAddr1(strAddr1.GetBuffer());
     CString strAddr2;
     strAddr2.Format(_T("tcp://%s:%s"), strIP, strPort);
-    m_mdSpi.SetAddr2(strAddr2.GetBuffer());
-    m_mdSpi.Login(iErr);
-    if(iErr != ID_SUCCESS)
+    m_pMdSpi->SetAddr2(strAddr2.GetBuffer());
+    m_pMdSpi->Login(iErr);
+    if(iErr != Success0)
         return;
 }
 
@@ -345,12 +357,12 @@ LRESULT CCTPDemoDlg::DefWindowProc(UINT Msg, WPARAM wParam, LPARAM lParam)
 
 void CCTPDemoDlg::OnBnClickedBtnLogout()
 {
-    int iErr = ID_SUCCESS;
-    m_mdSpi.StopSubscribe(iErr);
-    if(iErr != ID_SUCCESS)
+    int iErr = Success0;
+    m_pMdSpi->StopSubscribe(iErr);
+    if(iErr != Success0)
         return;
-    m_mdSpi.Logout(iErr);
-    if(iErr != ID_SUCCESS)
+    m_pMdSpi->Logout(iErr);
+    if(iErr != Success0)
         return;
     EnableUsernameCtrls(TRUE);
 }
@@ -409,7 +421,7 @@ void CCTPDemoDlg::MyOnRtnDepthMarketData(int nDataCount)
 {
     extern MyFileMapper<CThostFtdcDepthMarketDataField> g_totalData;
     extern HANDLE g_totalDataMutex;
-    int iErr = ID_SUCCESS;
+    int iErr = Success0;
     WaitForSingleObject(g_totalDataMutex, INFINITE);
     CThostFtdcDepthMarketDataField* pMarketData = g_totalData.GetDataByIndex(nDataCount-1);
     CString strMsg;

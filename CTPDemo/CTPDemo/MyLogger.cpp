@@ -156,7 +156,7 @@ MyFileMapper<LogItem256>* MyLogManager::GetFileMapper256(int& iErr, const std::s
 
     if(IsLoggerExists(iErr, filePath))
     {
-        std::map<std::string, MyFileMapper<LogItem128>, StringCompare>::iterator itor = m_map256.find(filePath);
+        std::map<std::string, MyFileMapper<LogItem256>, StringCompare>::iterator itor = m_map256.find(filePath);
         if(itor != m_map256.end())
         {
             iErr = WarnSameLoggerExists;

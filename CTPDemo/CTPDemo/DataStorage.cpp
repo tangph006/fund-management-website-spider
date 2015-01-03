@@ -156,3 +156,12 @@ void DataStorage::AddDepthMarketData(const CThostFtdcDepthMarketDataField* pDept
         m_vIF.push_back(*pDepthMarketData);
     }
 }
+
+void DataStorage::InitFromTotalData(TotalDepthMarketDataManager* pDataManager)
+{
+    int nCount = pDataManager->GetDataCount();
+    for(int i=0; i<nCount; i++)
+    {
+        AddDepthMarketData(pDataManager->GetDataByIndex(i));
+    }
+}

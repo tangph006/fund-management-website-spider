@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "CTPDemo.h"
 #include "CTPDemoDlg.h"
+#include "ErrorCode.h"
+#include "TotalDataManager.h"
+#include "DataStorage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -16,7 +19,6 @@ CCTPDemoApp::CCTPDemoApp()
 }
 
 CCTPDemoApp theApp;
-MyFileMapManager<CThostFtdcDepthMarketDataField> g_totalData;
 HANDLE g_totalDataMutex = CreateMutex(NULL, FALSE, _T("g_totalData_Mutex"));
 
 BOOL CCTPDemoApp::InitInstance()
@@ -29,8 +31,11 @@ BOOL CCTPDemoApp::InitInstance()
     AfxEnableControlContainer();
     CShellManager *pShellManager = new CShellManager;
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
-
-    CCTPDemoDlg dlg;
+    TotalDepthMarketDataManager totalData;
+    DataStorage dataStorage;
+    dataStorage.InitFromTotalData(&totalData);
+    CMyMdSpi mdSpi(&totalData, &dataStorage);
+    CCTPDemoDlg dlg(&mdSpi, NULL);
     m_pMainWnd = &dlg;
     INT_PTR nResponse = dlg.DoModal();
     if (nResponse == IDOK)
@@ -43,6 +48,7 @@ BOOL CCTPDemoApp::InitInstance()
     {
         delete pShellManager;
     }
+    g_totalData.UnMapFromFile();
     return FALSE;
 }
 

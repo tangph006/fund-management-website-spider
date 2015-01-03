@@ -6,14 +6,12 @@
 #include <string>
 #include <vector>
 #include "MyFileMapManager.h"
-#include "..\6.3.0_20140811_traderapi_win32\ThostFtdcMdApi.h"
-#include "ThostFtdcUserApiStruct.h"
 #include "MyMdSpi.h"
 
-class CCTPDemoDlg : public CDialogEx, public CThostFtdcMdSpi
+class CCTPDemoDlg : public CDialogEx
 {
 public:
-    CCTPDemoDlg(CWnd* pParent = NULL);
+    CCTPDemoDlg(CMyMdSpi* pMdSpi, DataStorage* pDataStorage, CWnd* pParent = NULL);
     enum { IDD = IDD_CTPDEMO_DIALOG };
 protected:
     HICON m_hIcon;
@@ -22,7 +20,8 @@ protected:
     CMyListCtrl m_listResult;
     CIPAddressCtrl m_ipctrlIP;
     CToolBar m_toolbar;
-    CMyMdSpi m_mdSpi;
+    CMyMdSpi* m_pMdSpi;
+    DataStorage* m_pDataStorage;
     std::vector<CString> m_vecMsg;
 protected:
     virtual void DoDataExchange(CDataExchange* pDX);
