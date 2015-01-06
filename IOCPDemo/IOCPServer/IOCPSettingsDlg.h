@@ -12,40 +12,40 @@
 
 class IOCPSettingsDlg : public CDialog
 {
-// Construction
+    // Construction
 public:
-	IOCPSettingsDlg(CWnd* pParent = NULL);   // standard constructor
+    IOCPSettingsDlg(CWnd* pParent = NULL);   // standard constructor
 
-// Dialog Data
-	//{{AFX_DATA(IOCPSettingsDlg)
-	enum { IDD = IDD_SETTINGS };
-	int		m_iMaxNumberOfConnections;
-	int		m_iMaxNrOfFreeBuff;
-	int		m_iMaxNrOfFreeContext;
-	int		m_iNrOfIOWorkers;
-	int		m_iNrOfLogicalWorkers;
-	int		m_iPortNr;
-	BOOL	m_bReadInOrder;
-	BOOL	m_iSendInOrder;
-	int		m_iNrOfPendlingReads;
-	//}}AFX_DATA
+    // Dialog Data
+    //{{AFX_DATA(IOCPSettingsDlg)
+    enum { IDD = IDD_SETTINGS };
+    int		m_iMaxNumberOfConnections;
+    int		m_iMaxNrOfFreeBuff;
+    int		m_iMaxNrOfFreeContext;
+    int		m_iNrOfIOWorkers;
+    int		m_iNrOfLogicalWorkers;
+    int		m_iPortNr;
+    BOOL	m_bReadInOrder;
+    BOOL	m_iSendInOrder;
+    int		m_iNrOfPendlingReads;
+    //}}AFX_DATA
 
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(IOCPSettingsDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+    // Overrides
+    // ClassWizard generated virtual function overrides
+    //{{AFX_VIRTUAL(IOCPSettingsDlg)
+protected:
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    //}}AFX_VIRTUAL
 
-// Implementation
+    // Implementation
 protected:
 
-	// Generated message map functions
-	//{{AFX_MSG(IOCPSettingsDlg)
-		// NOTE: the ClassWizard will add member functions here
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+    // Generated message map functions
+    //{{AFX_MSG(IOCPSettingsDlg)
+    // NOTE: the ClassWizard will add member functions here
+    //}}AFX_MSG
+    DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}

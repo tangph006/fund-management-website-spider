@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IOCP", "IOCPServer\IOCP.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IOCPClient", "IOCPClient\IOCPClient.vcxproj", "{9B62AA97-9866-4D8C-8B49-6BD731FBDEFB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileCopy", "FileCopy\FileCopy.vcxproj", "{039B87CE-B3FA-4F48-B325-D0C89B3B45F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{9B62AA97-9866-4D8C-8B49-6BD731FBDEFB}.Debug|Win32.Build.0 = Debug|Win32
 		{9B62AA97-9866-4D8C-8B49-6BD731FBDEFB}.Release|Win32.ActiveCfg = Release|Win32
 		{9B62AA97-9866-4D8C-8B49-6BD731FBDEFB}.Release|Win32.Build.0 = Release|Win32
+		{039B87CE-B3FA-4F48-B325-D0C89B3B45F8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{039B87CE-B3FA-4F48-B325-D0C89B3B45F8}.Debug|Win32.Build.0 = Debug|Win32
+		{039B87CE-B3FA-4F48-B325-D0C89B3B45F8}.Release|Win32.ActiveCfg = Release|Win32
+		{039B87CE-B3FA-4F48-B325-D0C89B3B45F8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
