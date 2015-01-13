@@ -67,52 +67,87 @@ HCURSOR CMFCTestDlg::OnQueryDragIcon()
 void CMFCTestDlg::OnBnClickedBegin()
 {
     UpdateData(TRUE);
-    std::vector<int> vec_1_2(m_nTotal+1, -1);
+    LARGE_INTEGER beginTime;
+    QueryPerformanceCounter(&beginTime);
+
+    int* pInt1 = new int[m_nTotal+1];
+    int* pInt2 = new int[m_nTotal+1];
+
+    memset(pInt1, 0, sizeof(int)*(m_nTotal+1));
     for(int i=0; i<=m_nTotal; i++)
     {
-        vec_1_2[i] = 1+i/2;
+        pInt1[i] = 1+i/2;
     }
 
-    std::vector<int> vec_1_2_5(vec_1_2.begin(), vec_1_2.end());
-    for(int i=5; i<=m_nTotal; i++)
+    memset(pInt2, 0, sizeof(int)*(m_nTotal+1));
+    for(int i=0; i<=m_nTotal; i++)
     {
-        for(int j=1; j<=i/5; j++)
+        for(int j=0; j<=i/5; j++)
         {
-            vec_1_2_5[i] += vec_1_2[i-j*5];
+            pInt2[i] += pInt1[i-j*5];
         }
     }
 
-    std::vector<int> vec_1_2_5_10(vec_1_2_5.begin(), vec_1_2_5.end());
-    for(int i=10; i<=m_nTotal; i++)
+    memset(pInt1, 0, sizeof(int)*(m_nTotal+1));
+    for(int i=0; i<=m_nTotal; i++)
     {
-        for(int j=1; j<=i/10; j++)
+        for(int j=0; j<=i/10; j++)
         {
-            vec_1_2_5_10[i] += vec_1_2_5[i-j*10];
+            pInt1[i] += pInt2[i-j*10];
         }
     }
 
-    std::vector<int> vec_1_2_5_10_20(vec_1_2_5_10.begin(), vec_1_2_5_10.end());
-    for(int i=20; i<=m_nTotal; i++)
+    memset(pInt2, 0, sizeof(int)*(m_nTotal+1));
+    for(int i=0; i<=m_nTotal; i++)
     {
-        for(int j=1; j<=i/20; j++)
+        for(int j=0; j<=i/20; j++)
         {
-            vec_1_2_5_10_20[i] += vec_1_2_5_10[i-j*20];
+            pInt2[i] += pInt1[i-j*20];
         }
     }
+
+    LARGE_INTEGER endTime;
+    QueryPerformanceCounter(&endTime);
+
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+
+    float fTime = (endTime.QuadPart-beginTime.QuadPart)/(float)(frequency.QuadPart);
+    delete pInt1;
+    delete pInt2;
 }
 
 
 void CMFCTestDlg::OnBnClickedBtnBegin2()
 {
     UpdateData(TRUE);
-    int nCountOf5 = 0;
-    for(int j=1; j<=m_nTotal; j++)
+    LARGE_INTEGER beginTime;
+    QueryPerformanceCounter(&beginTime);
+
+    int nCount =0;
+    for(int i1=0; i1<=m_nTotal/20; i1++)
     {
-        int temp = j;
-        while(temp%5 == 0 && temp >0)
+        int nLeft1 = m_nTotal - i1*20;
+        for(int i2=0; i2<=nLeft1/10; i2++)
         {
-            temp = temp/5;
-            nCountOf5++;
+            int nLeft2 = nLeft1 - i2*10;
+            for(int i3=0; i3<=nLeft2/5; i3++)
+            {
+                int nLeft3 = nLeft2 - i3*5;
+                for(int i4=0; i4<=nLeft3/2; i4++)
+                {
+                    nCount++;
+                }
+            }
         }
     }
+
+    LARGE_INTEGER endTime;
+    QueryPerformanceCounter(&endTime);
+
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+
+    float fTime = (endTime.QuadPart-beginTime.QuadPart)/(float)(frequency.QuadPart);
+    fTime = 0;
 }
